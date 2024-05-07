@@ -384,13 +384,13 @@ const bookRouter: Router = express.Router();
  * 
  * @api {put} /books/:isbn/rating/:rating Increment book rating
  * 
- * @apiDescription Update the number of ratings of a certain value for a book. The rating value should be between 1 and 5.
+ * @apiDescription Increment the ratings of a book. The rating type should be between 1 and 5.
  * 
  * @apiName IncrementRating
  * @apiGroup User
  * 
  * @apiParam {String} isbn The ISBN of the book to be updated
- * @apiParam {Number} rating The rating value to be updated (1-5)
+ * @apiParam {Number} rating The rating type to be updated (1-5)
  * 
  * @apiSuccess {Object} book The updated book
  * @apiUse BookSuccess
@@ -405,13 +405,13 @@ const bookRouter: Router = express.Router();
  * 
  * @api {put} /books/:isbn/rating/:rating Update book rating
  * 
- * @apiDescription Update the number of ratings of a certain value for a book. The rating value should be between 1 and 5.
+ * @apiDescription Update the ratings of a book. The rating type should be between 1 and 5.
  * 
  * @apiName UpdateRating
  * @apiGroup Admin
  * 
  * @apiParam {String} isbn The ISBN of the book to be updated
- * @apiParam {Number} rating The rating value to be updated (1-5)
+ * @apiParam {Number} rating The rating type to be updated (1-5)
  * 
  * @apiBody {Number} count The new count for the specified rating
  * 
