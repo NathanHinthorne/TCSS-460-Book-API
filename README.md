@@ -8,9 +8,9 @@ This is an API that allows the client to interact with a database of books. It p
 
 View the API documentation [here](https://nathanhinthorne.github.io/TCSS-460-Book-API/).
 
-## Technology Used
+## Tech Stack
 
-This API is implemented using the Node.js runtime environment and the Express.js framework. It uses a PostgreSQL database to store the books.
+This API is implemented in TypeScript using the Node.js runtime environment and the Express.js framework. It uses a PostgreSQL database to store the books.
 
 ## Acknowledgements
 
