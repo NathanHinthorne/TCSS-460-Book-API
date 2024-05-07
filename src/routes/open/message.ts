@@ -50,12 +50,14 @@ function mwValidNameMessageBody(
     }
 }
 
-/**
+
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+/*
  * @apiDefine JSONError
  * @apiError (400: JSON Error) {String} message "malformed JSON in parameters"
  */
 
-/**
+/*
  * @api {post} /message Request to add an entry
  *
  * @apiDescription Request to add a message and someone's name to the DB
@@ -134,7 +136,8 @@ messageRouter.post(
     }
 );
 
-/**
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+/*
  * @api {get} /message Request to all retrieve entries
  *
  * @apiDescription Request to retrieve all the entries
@@ -164,7 +167,9 @@ messageRouter.get('/all', (request: Request, response: Response) => {
         });
 });
 
-/**
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+
+/*
  * @api {get} /message Request to retrieve entries
  *
  * @apiDescription Request to retrieve all the entries of <code>priority</code>
@@ -211,7 +216,9 @@ messageRouter.get(
     }
 );
 
-/**
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+
+/*
  * @api {get} /message/:name Request to retrieve an entry
  *
  * @apiDescription Request to retrieve the complete entry for <code>name</code>.
@@ -256,7 +263,9 @@ messageRouter.get('/:name', (request: Request, response: Response) => {
         });
 });
 
-/**
+
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+/*
  * @api {put} /message Request to change an entry
  *
  * @apiDescription Request to replace the message entry in the DB for name
@@ -305,7 +314,9 @@ messageRouter.put(
     }
 );
 
-/**
+
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+/*
  * @api {delete} /message Request to remove entries
  *
  * @apiDescription Request to remove all entries of <code>priority</code>
@@ -351,7 +362,8 @@ messageRouter.delete(
     }
 );
 
-/**
+// I commented out this to keep the message route from appearing in the documentation -Nathan
+/*
  * @api {delete} /message/:name Request to remove an entry
  *
  * @apiDescription Request to remove an entry associated with <code>name</code> in the DB

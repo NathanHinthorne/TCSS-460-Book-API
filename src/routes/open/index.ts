@@ -4,6 +4,6 @@ import { messageRouter } from './message';
 
 const openRoutes: Router = express.Router();
 
-openRoutes.use('/message', messageRouter);
+// openRoutes.use('/message', messageRouter);
 
 export { openRoutes };
