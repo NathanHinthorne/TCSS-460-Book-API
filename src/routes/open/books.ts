@@ -35,6 +35,76 @@ import { pool, validationFunctions } from '../../core/utilities';
 
 const bookRouter: Router = express.Router();
 
+function mwValidRating(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    const rating: string = request.body.rating as string;
+    if (
+        validationFunctions.isNumberProvided(rating) &&
+        parseInt(rating) >= 1 &&
+        parseInt(rating) <= 5
+    ) {
+        next();
+    } else {
+        console.error('Invalid or missing Rating');
+        response.status(400).send({
+            message:
+                'Invalid or missing Rating - please refer to documentation',
+        });
+    }
+}
+
+function mwValidTitleQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    //const priority: string = request.query.title as string;
+    if (validationFunctions.isStringProvided(request.body.title)) {
+        next();
+    } else {
+        console.error('Invalid or missing Book Title');
+        response.status(400).send({
+            message:
+                'Invalid or missing  Book Title - please refer to documentation',
+        });
+    }
+}
+
+function mwValidAuthorQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    //const priority: string = request.query.authors as string;
+    if (validationFunctions.isStringProvided(request.body.authors)) {
+        next();
+    } else {
+        console.error('Invalid or missing Author');
+        response.status(400).send({
+            message:
+                'Invalid or missing Author - please refer to documentation',
+        });
+    }
+}
+
+function mwValidISBNQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    //const isbn: string = request.query.isbn13 as string;
+    if (validationFunctions.isNumberProvided(request.body.isbn)) {
+        next();
+    } else {
+        console.error('Invalid or missing ISBN');
+        response.status(400).send({
+            message: 'Invalid or missing ISBN - please refer to documentation',
+        });
+    }
+}
 /*
 ==============================================================
 2. Middlewear functions
@@ -147,7 +217,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
         .then((result) => {
             if (result.rowCount >= 1) {
                 response.send({
-                    books: result.rows,
+                    entries: result.rows,
                 });
             } else {
                 response.status(404).send({
@@ -401,6 +471,54 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
+
+bookRouter.put(
+    '/newRating',
+    mwValidRating,
+    mwValidISBNQuery,
+    (request: Request, response: Response, next: NextFunction) => {
+        const rate = 'rating_' + request.body.rating + '_star';
+        const theQuery =
+            'UPDATE BOOKS SET ' +
+            rate +
+            ' = (SELECT ' +
+            rate +
+            ' FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
+        const values = [request.body.isbn, request.body.isbn];
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    response.send({
+                        entry:
+                            'Updated: ' +
+                            result.rows[0].title +
+                            ' ratings: 1 star -> ' +
+                            result.rows[0].rating_1_star +
+                            '  2 star -> ' +
+                            result.rows[0].rating_2_star +
+                            ' 3 star -> ' +
+                            result.rows[0].rating_3_star +
+                            ' 4 star -> ' +
+                            result.rows[0].rating_4_star +
+                            ' 5 star -> ' +
+                            result.rows[0].rating_5_star,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: 'No book OR multiple books found',
+                    });
+                }
+            })
+            .catch((error) => {
+                //log the error
+                console.error('DB Query error on PUT');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 /**
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
