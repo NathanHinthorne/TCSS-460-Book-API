@@ -486,6 +486,34 @@ bookRouter.put(
             ' FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
         const values = [request.body.isbn, request.body.isbn];
         pool.query(theQuery, values)
+            .then(() => {
+                const updateQuery =
+                    'UPDATE BOOKS SET rating_count = (SELECT rating_count FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
+                const updatedValues = [request.body.isbn, request.body.isbn];
+                return pool.query(updateQuery, updatedValues);
+            })
+            .then((result) => {
+                const oneStar = result.rows[0].rating_1_star;
+                const twoStar = result.rows[0].rating_2_star;
+                const threeStar = result.rows[0].rating_3_star;
+                const fourStar = result.rows[0].rating_4_star;
+                const fiveStar = result.rows[0].rating_5_star;
+                const total = result.rows[0].rating_count;
+                const newAverage =
+                    (oneStar * 1 +
+                        twoStar * 2 +
+                        threeStar * 3 +
+                        fourStar * 4 +
+                        fiveStar * 5) /
+                    total;
+                console.log(newAverage);
+                const updateQueryAvg =
+                    'UPDATE BOOKS SET rating_avg = ' +
+                    newAverage.toFixed(2) +
+                    ' WHERE isbn13 = $1 RETURNING *';
+                const updatedValuesAvg = [request.body.isbn];
+                return pool.query(updateQueryAvg, updatedValuesAvg);
+            })
             .then((result) => {
                 if (result.rowCount == 1) {
                     response.send({
@@ -501,7 +529,11 @@ bookRouter.put(
                             ' 4 star -> ' +
                             result.rows[0].rating_4_star +
                             ' 5 star -> ' +
-                            result.rows[0].rating_5_star,
+                            result.rows[0].rating_5_star +
+                            ' total: ' +
+                            result.rows[0].rating_avg +
+                            ' AVERAGE: ' +
+                            result.rows[0].rating_avg,
                     });
                 } else {
                     response.status(404).send({
