@@ -40,7 +40,7 @@ function mwValidRating(
     response: Response,
     next: NextFunction
 ) {
-    const rating: string = request.body.rating as string;
+    const rating: string = request.body.changeRating as string;
     if (
         validationFunctions.isNumberProvided(rating) &&
         parseInt(rating) >= 1 &&
@@ -52,6 +52,23 @@ function mwValidRating(
         response.status(400).send({
             message:
                 'Invalid or missing Rating - please refer to documentation',
+        });
+    }
+}
+
+function mwValidNewRating(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    const rating: string = request.body.newRating as string;
+    if (validationFunctions.isNumberProvided(rating) && parseInt(rating) >= 0) {
+        next();
+    } else {
+        console.error('Invalid or missing New Rating');
+        response.status(400).send({
+            message:
+                'Invalid or missing New Rating - please refer to documentation',
         });
     }
 }
@@ -477,7 +494,7 @@ bookRouter.put(
     mwValidRating,
     mwValidISBNQuery,
     (request: Request, response: Response, next: NextFunction) => {
-        const rate = 'rating_' + request.body.rating + '_star';
+        const rate = 'rating_' + request.body.changeRating + '_star';
         const selectBookInfo = 'SELECT * FROM Books WHERE isbn13 = $1';
         const values = [request.body.isbn];
         let rating_1_star, rating_2_star, rating_3_star, rating_4_star;
@@ -505,7 +522,7 @@ bookRouter.put(
                             rating_3_star * 3 +
                             rating_4_star * 4 +
                             rating_5_star * 5 +
-                            request.body.rating) /
+                            request.body.changeRating) /
                         total
                     ).toFixed(6);
                     const updateQueryRating = `UPDATE BOOKS SET ${rate} = ${newRating} + 1, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
@@ -570,6 +587,87 @@ bookRouter.put(
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
+
+bookRouter.put(
+    '/newRating/admin',
+    mwValidRating,
+    mwValidNewRating,
+    mwValidISBNQuery,
+    (request: Request, response: Response, next: NextFunction) => {
+        const rate = 'rating_' + request.body.changeRating + '_star';
+        const selectBookInfo = `SELECT rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, ${rate} AS "oldRating"  FROM Books WHERE isbn13 = $1`;
+        const values = [request.body.isbn];
+        let rating_1_star, rating_2_star, rating_3_star, rating_4_star;
+        let rating_5_star, total, newAverage, oldRating;
+
+        pool.query(selectBookInfo, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    rating_1_star = result.rows[0].rating_1_star;
+                    rating_2_star = result.rows[0].rating_2_star;
+                    rating_3_star = result.rows[0].rating_3_star;
+                    rating_4_star = result.rows[0].rating_4_star;
+                    rating_5_star = result.rows[0].rating_5_star;
+                    oldRating = result.rows[0].oldRating;
+                    total =
+                        rating_1_star +
+                        rating_2_star +
+                        rating_3_star +
+                        rating_4_star +
+                        rating_5_star -
+                        oldRating +
+                        request.body.newRating;
+                    newAverage = (
+                        (rating_1_star * 1 +
+                            rating_2_star * 2 +
+                            rating_3_star * 3 +
+                            rating_4_star * 4 +
+                            rating_5_star * 5 -
+                            oldRating * request.body.changeRating +
+                            request.body.newRating *
+                                request.body.changeRating) /
+                        total
+                    ).toFixed(6);
+                    const values2 = [request.body.isbn, request.body.newRating];
+                    const updateQueryRating = `UPDATE BOOKS SET ${rate} = $2, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
+                    return pool.query(updateQueryRating, values2);
+                } else {
+                    response.status(404).send({
+                        message: 'No book OR multiple books found',
+                    });
+                }
+            })
+            .then((result) => {
+                response.send({
+                    entry:
+                        'Updated: ' +
+                        result.rows[0].title +
+                        ' ratings: 1 star -> ' +
+                        result.rows[0].rating_1_star +
+                        '  2 star -> ' +
+                        result.rows[0].rating_2_star +
+                        ' 3 star -> ' +
+                        result.rows[0].rating_3_star +
+                        ' 4 star -> ' +
+                        result.rows[0].rating_4_star +
+                        ' 5 star -> ' +
+                        result.rows[0].rating_5_star +
+                        ' total: ' +
+                        result.rows[0].rating_count +
+                        ' AVERAGE: ' +
+                        result.rows[0].rating_avg,
+                });
+            })
+            .catch((error) => {
+                //log the error
+                console.error('DB Query error on PUT');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 // I haven't finished these two endpoints yet. -Nathan
 /*
