@@ -478,68 +478,64 @@ bookRouter.put(
     mwValidISBNQuery,
     (request: Request, response: Response, next: NextFunction) => {
         const rate = 'rating_' + request.body.rating + '_star';
-        const theQuery =
-            'UPDATE BOOKS SET ' +
-            rate +
-            ' = (SELECT ' +
-            rate +
-            ' FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
-        const values = [request.body.isbn, request.body.isbn];
-        pool.query(theQuery, values)
-            .then(() => {
-                const updateQuery =
-                    'UPDATE BOOKS SET rating_count = (SELECT rating_count FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
-                const updatedValues = [request.body.isbn, request.body.isbn];
-                return pool.query(updateQuery, updatedValues);
-            })
-            .then((result) => {
-                const oneStar = result.rows[0].rating_1_star;
-                const twoStar = result.rows[0].rating_2_star;
-                const threeStar = result.rows[0].rating_3_star;
-                const fourStar = result.rows[0].rating_4_star;
-                const fiveStar = result.rows[0].rating_5_star;
-                const total = result.rows[0].rating_count;
-                const newAverage =
-                    (oneStar * 1 +
-                        twoStar * 2 +
-                        threeStar * 3 +
-                        fourStar * 4 +
-                        fiveStar * 5) /
-                    total;
-                console.log(newAverage);
-                const updateQueryAvg =
-                    'UPDATE BOOKS SET rating_avg = ' +
-                    newAverage.toFixed(2) +
-                    ' WHERE isbn13 = $1 RETURNING *';
-                const updatedValuesAvg = [request.body.isbn];
-                return pool.query(updateQueryAvg, updatedValuesAvg);
-            })
+        const selectBookInfo = 'SELECT * FROM Books WHERE isbn13 = $1';
+        const values = [request.body.isbn];
+        let rating_1_star, rating_2_star, rating_3_star, rating_4_star;
+        let rating_5_star, total, newAverage, newRating;
+
+        pool.query(selectBookInfo, values)
             .then((result) => {
                 if (result.rowCount == 1) {
-                    response.send({
-                        entry:
-                            'Updated: ' +
-                            result.rows[0].title +
-                            ' ratings: 1 star -> ' +
-                            result.rows[0].rating_1_star +
-                            '  2 star -> ' +
-                            result.rows[0].rating_2_star +
-                            ' 3 star -> ' +
-                            result.rows[0].rating_3_star +
-                            ' 4 star -> ' +
-                            result.rows[0].rating_4_star +
-                            ' 5 star -> ' +
-                            result.rows[0].rating_5_star +
-                            ' total: ' +
-                            result.rows[0].rating_avg +
-                            ' AVERAGE: ' +
-                            result.rows[0].rating_avg,
-                    });
+                    rating_1_star = result.rows[0].rating_1_star;
+                    rating_2_star = result.rows[0].rating_2_star;
+                    rating_3_star = result.rows[0].rating_3_star;
+                    rating_4_star = result.rows[0].rating_4_star;
+                    rating_5_star = result.rows[0].rating_5_star;
+                    total =
+                        rating_1_star +
+                        rating_2_star +
+                        rating_3_star +
+                        rating_4_star +
+                        rating_5_star +
+                        1;
+                    newRating = rate;
+                    newAverage = (
+                        (rating_1_star * 1 +
+                            rating_2_star * 2 +
+                            rating_3_star * 3 +
+                            rating_4_star * 4 +
+                            rating_5_star * 5 +
+                            request.body.rating) /
+                        total
+                    ).toFixed(6);
+                    const updateQueryRating = `UPDATE BOOKS SET ${rate} = ${newRating} + 1, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
+                    return pool.query(updateQueryRating, values);
                 } else {
                     response.status(404).send({
                         message: 'No book OR multiple books found',
                     });
                 }
+            })
+            .then((result) => {
+                response.send({
+                    entry:
+                        'Updated: ' +
+                        result.rows[0].title +
+                        ' ratings: 1 star -> ' +
+                        result.rows[0].rating_1_star +
+                        '  2 star -> ' +
+                        result.rows[0].rating_2_star +
+                        ' 3 star -> ' +
+                        result.rows[0].rating_3_star +
+                        ' 4 star -> ' +
+                        result.rows[0].rating_4_star +
+                        ' 5 star -> ' +
+                        result.rows[0].rating_5_star +
+                        ' total: ' +
+                        result.rows[0].rating_count +
+                        ' AVERAGE: ' +
+                        result.rows[0].rating_avg,
+                });
             })
             .catch((error) => {
                 //log the error
@@ -667,3 +663,82 @@ bookRouter.put(
  */
 
 export { bookRouter };
+
+// bookRouter.put(
+//     '/newRating',
+//     mwValidRating,
+//     mwValidISBNQuery,
+//     (request: Request, response: Response, next: NextFunction) => {
+//         const rate = 'rating_' + request.body.rating + '_star';
+//         const theQuery =
+//             'UPDATE BOOKS SET ' +
+//             rate +
+//             ' = (SELECT ' +
+//             rate +
+//             ' FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
+//         const values = [request.body.isbn, request.body.isbn];
+//         pool.query(theQuery, values)
+//             .then(() => {
+//                 const updateQuery =
+//                     'UPDATE BOOKS SET rating_count = (SELECT rating_count FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
+//                 const updatedValues = [request.body.isbn, request.body.isbn];
+//                 return pool.query(updateQuery, updatedValues);
+//             })
+//             .then((result) => {
+//                 const oneStar = result.rows[0].rating_1_star;
+//                 const twoStar = result.rows[0].rating_2_star;
+//                 const threeStar = result.rows[0].rating_3_star;
+//                 const fourStar = result.rows[0].rating_4_star;
+//                 const fiveStar = result.rows[0].rating_5_star;
+//                 const total = result.rows[0].rating_count;
+//                 const newAverage =
+//                     (oneStar * 1 +
+//                         twoStar * 2 +
+//                         threeStar * 3 +
+//                         fourStar * 4 +
+//                         fiveStar * 5) /
+//                     total;
+//                 const updateQueryAvg =
+//                     'UPDATE BOOKS SET rating_avg = ' +
+//                     newAverage.toFixed(2) +
+//                     ' WHERE isbn13 = $1 RETURNING *';
+//                 const updatedValuesAvg = [request.body.isbn];
+//                 return pool.query(updateQueryAvg, updatedValuesAvg);
+//             })
+//             .then((result) => {
+//                 if (result.rowCount == 1) {
+//                     response.send({
+//                         entry:
+//                             'Updated: ' +
+//                             result.rows[0].title +
+//                             ' ratings: 1 star -> ' +
+//                             result.rows[0].rating_1_star +
+//                             '  2 star -> ' +
+//                             result.rows[0].rating_2_star +
+//                             ' 3 star -> ' +
+//                             result.rows[0].rating_3_star +
+//                             ' 4 star -> ' +
+//                             result.rows[0].rating_4_star +
+//                             ' 5 star -> ' +
+//                             result.rows[0].rating_5_star +
+//                             ' total: ' +
+//                             result.rows[0].rating_avg +
+//                             ' AVERAGE: ' +
+//                             result.rows[0].rating_avg,
+//                     });
+//                 } else {
+//                     response.status(404).send({
+//                         message: 'No book OR multiple books found',
+//                     });
+//                 }
+//             })
+//             .catch((error) => {
+//                 //log the error
+//                 console.error('DB Query error on PUT');
+//                 console.error(error);
+//                 response.status(500).send({
+//                     message: 'server error - contact support',
+//                 });
+//             });
+//     }
+// );
