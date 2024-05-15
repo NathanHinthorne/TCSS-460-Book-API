@@ -14,7 +14,8 @@ import { messageRouter } from './message';
 
 const bookRouter: Router = express.Router();
 
-
+const isStringProvided = validationFunctions.isStringProvided;
+const isNumberProvided = validationFunctions.isNumberProvided;
 
 /*
 ==============================================================
@@ -29,16 +30,28 @@ const bookRouter: Router = express.Router();
 */
 
 // function mwValidBook(
-    
+
 // )
 
 // function mwValidAuthor(
 
 // )
 
-// function mwValidPubYear(
-
-// )
+function mwValidPubYear(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (validationFunctions.isNumberProvided(request.body.publication_year)) {
+        next();
+    } else {
+        console.error('Invalid or missing publication year');
+        response.status(400).send({
+            message:
+                'Invalid or missing publication year - please refer to documentation',
+        });
+    }
+}
 
 // function mwValidRating(
 
@@ -48,10 +61,36 @@ const bookRouter: Router = express.Router();
 
 // )
 
-
-
-
-
+function mwValidBookDescriptionBody(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (
+        isNumberProvided(request.body.isbn13) &&
+        isStringProvided(request.body.authors) &&
+        isNumberProvided(request.body.publication_year) &&
+        isStringProvided(request.body.original_title) &&
+        isStringProvided(request.body.title) &&
+        isNumberProvided(request.body.rating_avg) &&
+        isNumberProvided(request.body.rating_count) &&
+        isNumberProvided(request.body.rating_1_star) &&
+        isNumberProvided(request.body.rating_2_star) &&
+        isNumberProvided(request.body.rating_3_star) &&
+        isNumberProvided(request.body.rating_4_star) &&
+        isNumberProvided(request.body.rating_5_star) &&
+        isStringProvided(request.body.book.image_url) &&
+        isStringProvided(request.body.image_small_url)
+    ) {
+        next();
+    } else {
+        console.error('Missing required information');
+        response.status(400).send({
+            message:
+                'Missing required information - please refer to documentation',
+        });
+    }
+}
 
 /*
 ==============================================================
@@ -62,11 +101,11 @@ const bookRouter: Router = express.Router();
 */
 
 /**
- * This defines what a "book" object looks like. 
+ * This defines what a "book" object looks like.
  * It keeps us from typing the book object out multiple times.
- * 
+ *
  * This particular one is for whenever we need to return a book object.
- * 
+ *
  * @apiDefine BookSuccess
  * @apiSuccess {Number} book.isbn13 The ISBN of the book
  * @apiSuccess {String} book.authors The authors of the book
@@ -85,11 +124,11 @@ const bookRouter: Router = express.Router();
  */
 
 /**
- * This defines what a "book" object looks like. 
+ * This defines what a "book" object looks like.
  * It keeps us from typing the book object out multiple times.
- * 
+ *
  * This particular one is for whenever we need a book object as input in the body.
- * 
+ *
  * @apiDefine BookBody
  * @apiBody {Number} book.isbn13 The ISBN of the book
  * @apiBody {String} book.authors The authors of the book
@@ -107,25 +146,23 @@ const bookRouter: Router = express.Router();
  * @apiBody {String} book.image_small_url The URL of the small image of the book
  */
 
-
-
 // ---------------- GET ----------------
 
 /**
  * NOTE: This is a required endpoint
- * 
+ *
  * @api {get} /books Get all books
- * 
+ *
  * @apiDescription Get all books in the database
- * 
+ *
  * @apiName GetAllBooks
  * @apiGroup User
- * 
+ *
  * @apiSuccess {Object[]} bookList The list of books in the database
  * @apiUse BookSuccess
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
- * { 
+ * {
  *   "bookList":  [
  *     {
  *       "isbn13": "9780451526342",
@@ -145,25 +182,24 @@ const bookRouter: Router = express.Router();
  *     }
  *   ]
  * }
- * 
+ *
  * @apiError (404: Books Not Found) {String} message No books were found in the database
  */
 
-
-/** 
+/**
  * NOTE: This is a required endpoint
  * @api {get} /books/:isbn Get book by ISBN
- * 
+ *
  * @apiDescription Get a specific book by ISBN
- * 
+ *
  * @apiName GetByISBN
  * @apiGroup User
- * 
+ *
  * @apiParam {Number} isbn The ISBN paired with a given book
- * 
+ *
  * @apiSuccess {Object} book The book with the given ISBN
  * @apiUse BookSuccess
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  * {
  *   "book": {
@@ -183,29 +219,28 @@ const bookRouter: Router = express.Router();
  *       "image_small_url": "http://example.com/small_image.jpg"
  *    }
  * }
- * 
- * 
+ *
+ *
  * @apiError (400: Bad Request) {String} message The requested ISBN is not valid
-*/
-
+ */
 
 /**
  * NOTE: This is a required endpoint
  * @api {get} /books?author=:author Get books by author
- * 
+ *
  * @apiDescription Get books by a given author
- * 
+ *
  * @apiName GetByAuthors
  * @apiGroup User
- * 
+ *
  * @apiQuery {String} author The author's full name
- * 
+ *
  * @apiSuccess {Object[]} bookList The list of books by the given author
  * @apiUse BookSuccess
- * 
+ *
  * @apiSuccess {String} titles List of book titles by given author
  * @apiSuccessExample {json} Success-Response:
- * { 
+ * {
  *   "bookList":  [
  *     {
  *       "isbn13": "9780451526342",
@@ -225,7 +260,7 @@ const bookRouter: Router = express.Router();
  *     }
  *   ]
  * }
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
 // bookRouter.get(
@@ -234,26 +269,25 @@ const bookRouter: Router = express.Router();
 //     (request: Request, response: Response) => {
 //         const theQuery = 'SELECT name, message, priority FROM Demo WHERE name = $1';
 //         const values = [request.params.name];
-    
-// });
 
+// });
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books?rating=:rating Get books by rating 
- * 
+ * @api {get} /books?rating=:rating Get books by rating
+ *
  * @apiDescription Get all books at a given rating or above
- * 
+ *
  * @apiName GetByRating
  * @apiGroup User
- * 
+ *
  * @apiQuery {Number} rating_avg The rating the books need to be at or above
- * 
+ *
  * @apiSuccess {Object[]} bookList The list of books with the given rating or above
  * @apiUse BookSuccess
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
- * { 
+ * {
  *   "bookList":  [
  *     {
  *       "isbn13": "9780451526342",
@@ -273,26 +307,25 @@ const bookRouter: Router = express.Router();
  *     }
  *   ]
  * }
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
 
-
 /**
- * @api {get} /books?title=:title Get books by title 
- * 
+ * @api {get} /books?title=:title Get books by title
+ *
  * @apiDescription Get books by a given title
- * 
+ *
  * @apiName GetByTitle
  * @apiGroup User
- * 
+ *
  * @apiQuery {String} title The title of the book
- * 
+ *
  * @apiSuccess {Object[]} bookList The list of books with the given title
  * @apiUse BookSuccess
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
- * { 
+ * {
  *   "bookList":  [
  *     {
  *       "isbn13": "9780451526342",
@@ -312,27 +345,26 @@ const bookRouter: Router = express.Router();
  *     }
  *   ]
  * }
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided title is not valid or supported
  */
-
 
 /**
  * Publish year
  * @api {get} /books?year=:year Get books by publication year
- * 
+ *
  * @apiDescription Get books by a given publication year
- * 
+ *
  * @apiName PubYear
  * @apiGroup User
- * 
+ *
  * @apiQuery {Number} publication_year The year the book was published
- * 
+ *
  * @apiSuccess {Object[]} bookList The list of books with the given publication year
  * @apiUse BookSuccess
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
- * { 
+ * {
  *   "bookList":  [
  *     {
  *       "isbn13": "9780451526342",
@@ -352,54 +384,80 @@ const bookRouter: Router = express.Router();
  *     }
  *   ]
  * }
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
  */
+bookRouter.get(
+    '/:year',
+    mwValidPubYear,
+    (request: Request, response: Response) => {
+        const theQuery =
+            // 'SELECT isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url FROM BOOKS where publication_year = $1';
+            'SELECT * FROM books where publication_year = $1';
+        const values = [request.query.publication_year];
 
-
-
-
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entries: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: `No books of publication year ${request.query.publication_year} found`,
+                    });
+                }
+            })
+            .catch((error) => {
+                // log error
+                console.error('DB Query error on GET by publication year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 // ---------------- PUT ----------------
 
 /**
  * @api {put} /books/:isbn Update book fields by ISBN
- * 
+ *
  * @apiDescription Update specific fields of a book identified by its ISBN
- * 
+ *
  * @apiName UpdateBookFields
  * @apiGroup Admin
- * 
+ *
  * @apiParam {Number} isbn The ISBN of the book to be updated
- * 
+ *
  * @apiBody {Object} fields The fields to be updated with their new values
  * @apiUse BookBody
- * 
+ *
  * @apiSuccess {Object} book The updated book
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided ISBN or fields are not valid
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
 
-
 /**
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
- * NOTE: Since a user can only rate a book once, the rating count should only ever increase by 1. 
+ * NOTE: Since a user can only rate a book once, the rating count should only ever increase by 1.
  *      If a user changes their rating, the old rating should be removed and the new rating should be added.
- * 
+ *
  * @api {put} /books/:isbn/rating/:rating Increment book rating
- * 
+ *
  * @apiDescription Increment the ratings of a book. The rating type should be between 1 and 5.
- * 
+ *
  * @apiName IncrementRating
  * @apiGroup User
- * 
+ *
  * @apiParam {Number} isbn The ISBN of the book to be updated
  * @apiParam {Number} rating The rating type to be updated (1-5)
- * 
+ *
  * @apiSuccess {Object} book The updated book
  * @apiUse BookSuccess
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
@@ -407,26 +465,25 @@ const bookRouter: Router = express.Router();
 /**
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
  * NOTE: An admin is allowed to adjust the ratings without a limit.
- * 
+ *
  * @api {put} /books/:isbn/rating/:rating Update book rating
- * 
+ *
  * @apiDescription Update the ratings of a book. The rating type should be between 1 and 5.
- * 
+ *
  * @apiName UpdateRating
  * @apiGroup Admin
- * 
+ *
  * @apiParam {Number} isbn The ISBN of the book to be updated
  * @apiParam {Number} rating The rating type to be updated (1-5)
- * 
+ *
  * @apiBody {Number} count The new count for the specified rating
- * 
+ *
  * @apiSuccess {Object} book The updated book
  * @apiUse BookSuccess
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
-
 
 // I haven't finished these two endpoints yet. -Nathan
 /*
@@ -447,38 +504,35 @@ const bookRouter: Router = express.Router();
 /*
  * Author
  * @api {put} /author
- * 
+ *
  * @apiDescription Update the author of a book
- * 
+ *
  * @apiName UpdateAuthor6
  * @apiGroup Admin
- * 
- * @apiQuery {String} title The title of the book to be updated 
- * 
+ *
+ * @apiQuery {String} title The title of the book to be updated
+ *
  * @apiSuccess {String} title
  * @apiSuccessExample {json} Success-Response:
  *   { "titles":  "..." }
-*/
-
-
-
+ */
 
 // ---------------- POST ----------------
 
 /**
  * NOTE: Required endpoint
  * NOTE: This endpoint should allow null values for fields that are not required
- * 
+ *
  * @api {post} /books Add a new book
- * 
+ *
  * @apiDescription Add a new book to the database
- * 
+ *
  * @apiName AddBook
  * @apiGroup Admin
- * 
+ *
  * @apiBody {Object} book The book to be added
  * @apiUse BookBody
- * 
+ *
  * @apiParamExample {json} Request-Example:
  * {
  *   "isbn13": "9780451526342",
@@ -496,18 +550,64 @@ const bookRouter: Router = express.Router();
  *   "image_url": "http://example.com/image.jpg",
  *   "image_small_url": "http://example.com/small_image.jpg"
  * }
- * 
+ *
  * @apiSuccess {Object} book The book that was added
  * @apiUse BookSuccess
- * 
+ *
  * @apiError (400: Bad Request) {String} message The provided book data is not valid
-*/
+ */
+bookRouter.post(
+    '/',
+    mwValidBookDescriptionBody,
+    (request: Request, response: Response) => {
+        const theQuery =
+            // 'INSERT INTO BOOKS(isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13, $14) RETURNING *';
+            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *';
+        const values = [
+            request.body.isbn13,
+            request.body.authors,
+            request.body.publication_year,
+            request.body.original_title,
+            request.body.title,
+            request.body.rating_avg,
+            request.body.rating_count,
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+            request.body.image_url,
+            request.body.image_small_url,
+        ];
 
-
-
-
-
-
+        pool.query(theQuery, values)
+            .then((result) => {
+                // result.rows array are the records returned from the SQL statement.
+                // An INSERT statement will return a single row, the row that was inserted.
+                response.status(201).send({
+                    entry: result.rows[0],
+                });
+            })
+            .catch((error) => {
+                if (
+                    error.detail != undefined &&
+                    (error.detail as string).endsWith('already exists.')
+                ) {
+                    console.error('ISBN already exists');
+                    response.status(400).send({
+                        message: 'ISBN already exists',
+                    });
+                } else {
+                    //log the error
+                    console.error('DB Query error on POST');
+                    console.error(error);
+                    response.status(500).send({
+                        message: 'server error - contact support',
+                    });
+                }
+            });
+    }
+);
 
 // ---------------- DELETE ----------------
 
@@ -515,17 +615,15 @@ const bookRouter: Router = express.Router();
  * NOTE: Required endpoint
  * ISBNs 1 or more (required)
  * @api {delete} /isbn Delete books by ISBN
- * 
+ *
  * @apiDescription Delete one or more books by ISBN
- * 
+ *
  * @apiName DeleteISBNs
  * @apiGroup Admin
- * 
+ *
  * @apiBody {String[]} isbns array of ISBNs. Can be 1 or more
- * 
+ *
  * @apiSuccess {String[]} isbns The ISBNs of the books that were deleted
- * 
+ *
  * @apiError (400: Bad Request) {String} message At least one of the provided ISBNs is not valid
  */
-
-
