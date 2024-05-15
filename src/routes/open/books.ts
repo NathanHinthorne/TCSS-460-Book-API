@@ -10,9 +10,9 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
-import { messageRouter } from './message';
 
 const bookRouter: Router = express.Router();
+
 
 function mwValidRating(
     request: Request,
@@ -793,3 +793,6 @@ bookRouter.delete(
             });
 });
 
+
+// "return" the router
+export { bookRouter };
