@@ -28,25 +28,6 @@ const bookRouter: Router = express.Router();
 ==============================================================
 */
 
-// function mwValidBook(
-    
-// )
-
-// function mwValidAuthor(
-
-// )
-
-// function mwValidPubYear(
-
-// )
-
-// function mwValidRating(
-
-// )
-
-// function mwValidIsbn(
-
-// )
 
 
 
