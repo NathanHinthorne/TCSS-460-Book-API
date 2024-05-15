@@ -6,6 +6,9 @@ import { bookRouter } from './books';
 const openRoutes: Router = express.Router();
 
 openRoutes.use('/message', messageRouter);
+<<<<<<< HEAD
 openRoutes.use('/books', bookRouter);
+=======
+>>>>>>> origin
 
 export { openRoutes };

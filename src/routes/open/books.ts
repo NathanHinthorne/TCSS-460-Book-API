@@ -1,26 +1,4 @@
 /*
-
-This file can be split into 3 pieces: 
-
-1. Setup
-    a. Import necessary things
-    b. Define a new router
-
-2. Middlewear functions
-    a. These are functions that have access to 
-        the request object (req), the response object (res), 
-        and the next middleware function in the application’s 
-        request-response cycle. 
-    b. They can perform tasks like input validation, logging, 
-        or modifying the request/response objects.
-
-3. Endpoint handlers
-    a. Define endpoints using get/put/post/delete.
-    b. These will respond to HTTP requests made to specific paths.
-
-*/
-
-/*
 ==============================================================
 1. Setup
     a. Import necessary things
@@ -32,6 +10,7 @@ This file can be split into 3 pieces:
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
+import { messageRouter } from './message';
 
 const bookRouter: Router = express.Router();
 
@@ -149,7 +128,7 @@ function mwValidISBNQuery(
  * This particular one is for whenever we need to return a book object.
  *
  * @apiDefine BookSuccess
- * @apiSuccess {String} book.isbn13 The ISBN of the book
+ * @apiSuccess {Number} book.isbn13 The ISBN of the book
  * @apiSuccess {String} book.authors The authors of the book
  * @apiSuccess {Number} book.publication_year The year the book was published
  * @apiSuccess {String} book.original_title The original title of the book
@@ -172,7 +151,7 @@ function mwValidISBNQuery(
  * This particular one is for whenever we need a book object as input in the body.
  *
  * @apiDefine BookBody
- * @apiBody {String} book.isbn13 The ISBN of the book
+ * @apiBody {Number} book.isbn13 The ISBN of the book
  * @apiBody {String} book.authors The authors of the book
  * @apiBody {Number} book.publication_year The year the book was published
  * @apiBody {String} book.original_title The original title of the book
@@ -261,7 +240,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiName GetByISBN
  * @apiGroup User
  *
- * @apiParam {String} isbn The ISBN paired with a given book
+ * @apiParam {Number} isbn The ISBN paired with a given book
  *
  * @apiSuccess {Object} book The book with the given ISBN
  * @apiUse BookSuccess
@@ -334,7 +313,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * NOTE: This is a required endpoint
  * @api {get} /books?rating=:rating Get books by rating
  *
- * @apiDescription Get books by a given rating
+ * @apiDescription Get all books at a given rating or above
  *
  * @apiName GetByRating
  * @apiGroup User
@@ -456,7 +435,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiName UpdateBookFields
  * @apiGroup Admin
  *
- * @apiParam {String} isbn The ISBN of the book to be updated
+ * @apiParam {Number} isbn The ISBN of the book to be updated
  *
  * @apiBody {Object} fields The fields to be updated with their new values
  * @apiUse BookBody
@@ -479,7 +458,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiName IncrementRating
  * @apiGroup User
  *
- * @apiParam {String} isbn The ISBN of the book to be updated
+ * @apiParam {Number} isbn The ISBN of the book to be updated
  * @apiParam {Number} rating The rating type to be updated (1-5)
  *
  * @apiSuccess {Object} book The updated book
@@ -576,7 +555,7 @@ bookRouter.put(
  * @apiName UpdateRating
  * @apiGroup Admin
  *
- * @apiParam {String} isbn The ISBN of the book to be updated
+ * @apiParam {Number} isbn The ISBN of the book to be updated
  * @apiParam {Number} rating The rating type to be updated (1-5)
  *
  * @apiBody {Number} count The new count for the specified rating
