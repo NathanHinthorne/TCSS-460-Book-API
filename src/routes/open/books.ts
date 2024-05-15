@@ -10,9 +10,9 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
-import { messageRouter } from './message';
 
 const bookRouter: Router = express.Router();
+
 
 function mwValidRating(
     request: Request,
@@ -308,6 +308,25 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
+bookRouter.get(
+    '/',
+    // mwValidAuthor, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
+        const values = [request.params.author];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+    
+});
+
 
 /**
  * NOTE: This is a required endpoint
@@ -347,6 +366,24 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
+bookRouter.get(
+    '/',
+    // mwValidRating, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
+        const values = [request.params.rating_avg];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+    
+});
 
 /**
  * @api {get} /books?title=:title Get books by title
@@ -738,84 +775,24 @@ bookRouter.put(
  *
  * @apiError (400: Bad Request) {String} message At least one of the provided ISBNs is not valid
  */
+bookRouter.delete(
+    '/isbn',
+    // mwValidISBN, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `DELETE FROM books WHERE isbn13 = $1`;
+        const values = [request.body.isbns];
 
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+});
+
+
+// "return" the router
 export { bookRouter };
-
-// bookRouter.put(
-//     '/newRating',
-//     mwValidRating,
-//     mwValidISBNQuery,
-//     (request: Request, response: Response, next: NextFunction) => {
-//         const rate = 'rating_' + request.body.rating + '_star';
-//         const theQuery =
-//             'UPDATE BOOKS SET ' +
-//             rate +
-//             ' = (SELECT ' +
-//             rate +
-//             ' FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
-//         const values = [request.body.isbn, request.body.isbn];
-//         pool.query(theQuery, values)
-//             .then(() => {
-//                 const updateQuery =
-//                     'UPDATE BOOKS SET rating_count = (SELECT rating_count FROM BOOKS WHERE isbn13 = $1) + 1 WHERE isbn13 = $2 RETURNING *';
-//                 const updatedValues = [request.body.isbn, request.body.isbn];
-//                 return pool.query(updateQuery, updatedValues);
-//             })
-//             .then((result) => {
-//                 const oneStar = result.rows[0].rating_1_star;
-//                 const twoStar = result.rows[0].rating_2_star;
-//                 const threeStar = result.rows[0].rating_3_star;
-//                 const fourStar = result.rows[0].rating_4_star;
-//                 const fiveStar = result.rows[0].rating_5_star;
-//                 const total = result.rows[0].rating_count;
-//                 const newAverage =
-//                     (oneStar * 1 +
-//                         twoStar * 2 +
-//                         threeStar * 3 +
-//                         fourStar * 4 +
-//                         fiveStar * 5) /
-//                     total;
-//                 const updateQueryAvg =
-//                     'UPDATE BOOKS SET rating_avg = ' +
-//                     newAverage.toFixed(2) +
-//                     ' WHERE isbn13 = $1 RETURNING *';
-//                 const updatedValuesAvg = [request.body.isbn];
-//                 return pool.query(updateQueryAvg, updatedValuesAvg);
-//             })
-//             .then((result) => {
-//                 if (result.rowCount == 1) {
-//                     response.send({
-//                         entry:
-//                             'Updated: ' +
-//                             result.rows[0].title +
-//                             ' ratings: 1 star -> ' +
-//                             result.rows[0].rating_1_star +
-//                             '  2 star -> ' +
-//                             result.rows[0].rating_2_star +
-//                             ' 3 star -> ' +
-//                             result.rows[0].rating_3_star +
-//                             ' 4 star -> ' +
-//                             result.rows[0].rating_4_star +
-//                             ' 5 star -> ' +
-//                             result.rows[0].rating_5_star +
-//                             ' total: ' +
-//                             result.rows[0].rating_avg +
-//                             ' AVERAGE: ' +
-//                             result.rows[0].rating_avg,
-//                     });
-//                 } else {
-//                     response.status(404).send({
-//                         message: 'No book OR multiple books found',
-//                     });
-//                 }
-//             })
-//             .catch((error) => {
-//                 //log the error
-//                 console.error('DB Query error on PUT');
-//                 console.error(error);
-//                 response.status(500).send({
-//                     message: 'server error - contact support',
-//                 });
-//             });
-//     }
-// );
