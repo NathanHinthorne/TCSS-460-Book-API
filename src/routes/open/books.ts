@@ -228,14 +228,24 @@ const bookRouter: Router = express.Router();
  * 
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
-// bookRouter.get(
-//     '/',
-//     mwValidAuthor,
-//     (request: Request, response: Response) => {
-//         const theQuery = 'SELECT name, message, priority FROM Demo WHERE name = $1';
-//         const values = [request.params.name];
+bookRouter.get(
+    '/',
+    // mwValidAuthor, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
+        const values = [request.params.author];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
     
-// });
+});
 
 
 /**
@@ -276,7 +286,24 @@ const bookRouter: Router = express.Router();
  * 
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
+bookRouter.get(
+    '/',
+    // mwValidRating, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
+        const values = [request.params.rating_avg];
 
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+    
+});
 
 /**
  * @api {get} /books?title=:title Get books by title 
@@ -527,5 +554,21 @@ const bookRouter: Router = express.Router();
  * 
  * @apiError (400: Bad Request) {String} message At least one of the provided ISBNs is not valid
  */
+bookRouter.delete(
+    '/isbn',
+    // mwValidISBN, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `DELETE FROM books WHERE isbn13 = $1`;
+        const values = [request.body.isbns];
 
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+});
 
