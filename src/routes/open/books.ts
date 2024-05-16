@@ -103,6 +103,22 @@ function mwValidISBNQuery(
         });
     }
 }
+
+function mwValidPubYearQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (isNumberProvided(request.query.publication_year)) {
+        next();
+    } else {
+        console.error('Invalid or missing publication year');
+        response.status(400).send({
+            message:
+                'Invalid or missing publication year - please refer to documentation',
+        });
+    }
+}
 /*
 ==============================================================
 2. Middlewear functions
@@ -123,21 +139,21 @@ function mwValidISBNQuery(
 
 // )
 
-function mwValidPubYear(
-    request: Request,
-    response: Response,
-    next: NextFunction
-) {
-    if (isNumberProvided(request.params.publication_year)) {
-        next();
-    } else {
-        console.error('Invalid or missing publication year');
-        response.status(400).send({
-            message:
-                'Invalid or missing publication year - please refer to documentation',
-        });
-    }
-}
+// function mwValidPubYear(
+//     request: Request,
+//     response: Response,
+//     next: NextFunction
+// ) {
+//     if (isNumberProvided(request.params.publication_year)) {
+//         next();
+//     } else {
+//         console.error('Invalid or missing publication year');
+//         response.status(400).send({
+//             message:
+//                 'Invalid or missing publication year - please refer to documentation',
+//         });
+//     }
+// }
 
 // function mwValidRating(
 
@@ -527,13 +543,11 @@ bookRouter.get(
  * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
  */
 bookRouter.get(
-    '/:year',
-    mwValidPubYear,
+    '/',
+    mwValidPubYearQuery,
     (request: Request, response: Response) => {
-        const theQuery =
-            // 'SELECT isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url FROM BOOKS where publication_year = $1';
-            'SELECT * FROM books WHERE publication_year = $1';
-        const values = [request.params.publication_year];
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.query.publication_year];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -541,7 +555,6 @@ bookRouter.get(
                     response.send({
                         entries: result.rows,
                     });
-                    // response.json(result.rows);
                 } else {
                     response.status(404).send({
                         message: `No books of publication year ${request.query.publication_year} found`,
