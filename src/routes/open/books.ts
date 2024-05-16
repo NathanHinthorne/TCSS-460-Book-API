@@ -13,7 +13,6 @@ import { pool, validationFunctions } from '../../core/utilities';
 
 const bookRouter: Router = express.Router();
 
-
 function mwValidRating(
     request: Request,
     response: Response,
@@ -319,14 +318,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
-});
-
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
@@ -377,13 +375,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
-});
+    }
+);
 
 /**
  * @api {get} /books?title=:title Get books by title
@@ -422,6 +420,33 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided title is not valid or supported
  */
+
+bookRouter.get(
+    '/title/:title',
+    mwValidTitleQuery,
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE title ILIKE $1`;
+        const values = [`%${request.params.title}%`];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount >= 1) {
+                    response.json(result.rows);
+                } else {
+                    response.status(404).send({
+                        message: 'Books not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('DB Query error on GET by title');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 /**
  * Publish year
@@ -786,13 +811,13 @@ bookRouter.delete(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-});
-
+    }
+);
 
 // "return" the router
 export { bookRouter };
