@@ -128,7 +128,7 @@ function mwValidPubYear(
     response: Response,
     next: NextFunction
 ) {
-    if (validationFunctions.isNumberProvided(request.body.publication_year)) {
+    if (isNumberProvided(request.params.publication_year)) {
         next();
     } else {
         console.error('Invalid or missing publication year');
@@ -153,6 +153,7 @@ function mwValidBookDescriptionBody(
     next: NextFunction
 ) {
     if (
+        isNumberProvided(request.body.id) &&
         isNumberProvided(request.body.isbn13) &&
         isStringProvided(request.body.authors) &&
         isNumberProvided(request.body.publication_year) &&
@@ -165,7 +166,7 @@ function mwValidBookDescriptionBody(
         isNumberProvided(request.body.rating_3_star) &&
         isNumberProvided(request.body.rating_4_star) &&
         isNumberProvided(request.body.rating_5_star) &&
-        isStringProvided(request.body.book.image_url) &&
+        isStringProvided(request.body.image_url) &&
         isStringProvided(request.body.image_small_url)
     ) {
         next();
@@ -531,8 +532,8 @@ bookRouter.get(
     (request: Request, response: Response) => {
         const theQuery =
             // 'SELECT isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url FROM BOOKS where publication_year = $1';
-            'SELECT * FROM books where publication_year = $1';
-        const values = [request.query.publication_year];
+            'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.params.publication_year];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -540,6 +541,7 @@ bookRouter.get(
                     response.send({
                         entries: result.rows,
                     });
+                    // response.json(result.rows);
                 } else {
                     response.status(404).send({
                         message: `No books of publication year ${request.query.publication_year} found`,
@@ -857,8 +859,9 @@ bookRouter.post(
     (request: Request, response: Response) => {
         const theQuery =
             // 'INSERT INTO BOOKS(isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13, $14) RETURNING *';
-            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *';
+            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
         const values = [
+            request.body.id,
             request.body.isbn13,
             request.body.authors,
             request.body.publication_year,
@@ -888,9 +891,9 @@ bookRouter.post(
                     error.detail != undefined &&
                     (error.detail as string).endsWith('already exists.')
                 ) {
-                    console.error('ISBN already exists');
+                    console.error('id already exists');
                     response.status(400).send({
-                        message: 'ISBN already exists',
+                        message: 'id already exists',
                     });
                 } else {
                     //log the error
