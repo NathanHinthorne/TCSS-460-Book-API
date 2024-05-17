@@ -8,11 +8,25 @@
 
 //express is the framework we're going to use to handle requests
 import express, { NextFunction, Request, Response, Router } from 'express';
+
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
 
 const bookRouter: Router = express.Router();
 
+
+
+/*
+==============================================================
+2. Middlewear functions
+    a. These are functions that have access to 
+        the request object (req), the response object (res), 
+        and the next middleware function in the application’s 
+        request-response cycle. 
+    b. They can perform tasks like input validation, logging, 
+        or modifying the request/response objects.
+==============================================================
+*/
 
 function mwValidRating(
     request: Request,
@@ -101,17 +115,7 @@ function mwValidISBNQuery(
         });
     }
 }
-/*
-==============================================================
-2. Middlewear functions
-    a. These are functions that have access to 
-        the request object (req), the response object (res), 
-        and the next middleware function in the application’s 
-        request-response cycle. 
-    b. They can perform tasks like input validation, logging, 
-        or modifying the request/response objects.
-==============================================================
-*/
+
 
 /*
 ==============================================================
@@ -179,12 +183,11 @@ function mwValidISBNQuery(
  * @apiName GetAllBooks
  * @apiGroup User
  *
- * @apiSuccess {Object[]} bookList The list of books in the database
+ * @apiSuccess {Object[]}  The list of books in the database
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
@@ -202,7 +205,6 @@ function mwValidISBNQuery(
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (404: Books Not Found) {String} message No books were found in the database
  */
@@ -233,7 +235,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books/:isbn Get book by ISBN
+ * @api {get} /books/isbn/:isbn Get book by ISBN
  *
  * @apiDescription Get a specific book by ISBN
  *
@@ -271,7 +273,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books?author=:author Get books by author
+ * @api {get} /books/author?author=:author Get books by author
  *
  * @apiDescription Get books by a given author
  *
@@ -280,13 +282,12 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiQuery {String} author The author's full name
  *
- * @apiSuccess {Object[]} bookList The list of books by the given author
+ * @apiSuccess {Object[]} The list of books by the given author
  * @apiUse BookSuccess
  *
  * @apiSuccess {String} titles List of book titles by given author
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
@@ -304,16 +305,15 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
 bookRouter.get(
-    '/',
-    // mwValidAuthor, //TODO add this middleware
+    '/author/',
+    // mwValidAuthorQuery, 
     (request: Request, response: Response) => {
-        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
-        const values = [request.params.author];
+        const theQuery = `SELECT * FROM books WHERE authors ILIKE $1`;
+        const values = [`%${request.query.author}%`];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -327,10 +327,9 @@ bookRouter.get(
     
 });
 
-
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books?rating=:rating Get books by rating
+ * @api {get} /books/rating?rating=:rating Get books by rating
  *
  * @apiDescription Get all books at a given rating or above
  *
@@ -339,12 +338,11 @@ bookRouter.get(
  *
  * @apiQuery {Number} rating_avg The rating the books need to be at or above
  *
- * @apiSuccess {Object[]} bookList The list of books with the given rating or above
+ * @apiSuccess {Object[]} The list of books with the given rating or above
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
@@ -362,16 +360,15 @@ bookRouter.get(
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
 bookRouter.get(
-    '/',
-    // mwValidRating, //TODO add this middleware
+    '/rating/',
+    // mwValidRating,
     (request: Request, response: Response) => {
         const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
-        const values = [request.params.rating_avg];
+        const values = [request.query.rating];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -386,7 +383,7 @@ bookRouter.get(
 });
 
 /**
- * @api {get} /books?title=:title Get books by title
+ * @api {get} /books/title?title=:title Get books by title
  *
  * @apiDescription Get books by a given title
  *
@@ -395,12 +392,11 @@ bookRouter.get(
  *
  * @apiQuery {String} title The title of the book
  *
- * @apiSuccess {Object[]} bookList The list of books with the given title
+ * @apiSuccess {Object[]} The list of books with the given title
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
@@ -418,14 +414,13 @@ bookRouter.get(
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided title is not valid or supported
  */
 
 /**
  * Publish year
- * @api {get} /books?year=:year Get books by publication year
+ * @api {get} /books/year?year=:year Get books by publication year
  *
  * @apiDescription Get books by a given publication year
  *
@@ -434,12 +429,11 @@ bookRouter.get(
  *
  * @apiQuery {Number} publication_year The year the book was published
  *
- * @apiSuccess {Object[]} bookList The list of books with the given publication year
+ * @apiSuccess {Object[]} The list of books with the given publication year
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
@@ -457,7 +451,6 @@ bookRouter.get(
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
  */
@@ -465,7 +458,7 @@ bookRouter.get(
 // ---------------- PUT ----------------
 
 /**
- * @api {put} /books/:isbn Update book fields by ISBN
+ * @api {put} /books/isbn/:isbn Update book fields by ISBN
  *
  * @apiDescription Update specific fields of a book identified by its ISBN
  *
@@ -585,7 +578,7 @@ bookRouter.put(
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
  * NOTE: An admin is allowed to adjust the ratings without a limit.
  *
- * @api {put} /books/:isbn/rating/:rating Update book rating
+ * @api {put} /books/:isbn/newRating/:rating Update book rating
  *
  * @apiDescription Update the ratings of a book. The rating type should be between 1 and 5.
  *
@@ -723,7 +716,7 @@ bookRouter.put(
  * NOTE: Required endpoint
  * NOTE: This endpoint should allow null values for fields that are not required
  *
- * @api {post} /books Add a new book
+ * @api {post} /books/add Add a new book
  *
  * @apiDescription Add a new book to the database
  *
@@ -762,7 +755,7 @@ bookRouter.put(
 /**
  * NOTE: Required endpoint
  * ISBNs 1 or more (required)
- * @api {delete} /isbn Delete books by ISBN
+ * @api {delete} /books/isbn Delete book by ISBN
  *
  * @apiDescription Delete one or more books by ISBN
  *
@@ -777,10 +770,9 @@ bookRouter.put(
  */
 bookRouter.delete(
     '/isbn',
-    // mwValidISBN, //TODO add this middleware
     (request: Request, response: Response) => {
-        const theQuery = `DELETE FROM books WHERE isbn13 = $1`;
-        const values = [request.body.isbns];
+        const theQuery = 'DELETE FROM books WHERE isbn13 = $1';
+        const values = [request.body.isbn];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -791,7 +783,11 @@ bookRouter.delete(
                     message: "Error: " + err.detail
                 });
             });
-});
+    }
+);
+
+
+
 
 
 // "return" the router
