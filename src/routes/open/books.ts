@@ -534,6 +534,49 @@ bookRouter.get(
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
 
+bookRouter.put(
+    '/books/:isbn',
+    mwValidISBNQuery,
+    async (request: Request, response: Response) => {
+        const { isbn } = request.params;
+        const updates = request.body;
+
+        // Check if updates object is empty
+        if (Object.keys(updates).length === 0) {
+            return response.status(400).send({
+                message: 'No fields provided for update',
+            });
+        }
+
+        // Generate dynamic query parts for the fields to update
+        const setClause = Object.keys(updates)
+            .map((key, index) => `${key} = $${index + 2}`)
+            .join(', ');
+
+        const values = [isbn, ...Object.values(updates)];
+
+        const theQuery = `UPDATE books SET ${setClause} WHERE isbn13 = $1 RETURNING *`;
+
+        try {
+            const result = await pool.query(theQuery, values);
+
+            if (result.rowCount >= 1) {
+                response.json(result.rows[0]);
+            } else {
+                response.status(404).send({
+                    message: 'Book not found',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on PUT');
+            console.error(error);
+            response.status(500).send({
+                message: 'Server error - contact support',
+            });
+        }
+    }
+);
+
 /**
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
  * NOTE: Since a user can only rate a book once, the rating count should only ever increase by 1.
