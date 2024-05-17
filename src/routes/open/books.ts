@@ -555,7 +555,7 @@ bookRouter.get('/publication_year/', (request: Request, response: Response) => {
         .then((result) => {
             if (result.rowCount > 0) {
                 response.send({
-                    entries: result.rows.map(format),
+                    entries: result.rows,
                 });
             } else {
                 response.status(404).send({
@@ -868,7 +868,7 @@ bookRouter.put(
  * @apiError (400: Bad Request) {String} message The provided book data is not valid
  */
 bookRouter.post(
-    '/addNewBook/',
+    '/add_new_book/',
     mwValidBookDescriptionBody,
     (request: Request, response: Response) => {
         const theQuery =
@@ -896,7 +896,7 @@ bookRouter.post(
                 // result.rows array are the records returned from the SQL statement.
                 // An INSERT statement will return a single row, the row that was inserted.
                 response.status(201).send({
-                    entry: format(result.rows[0]),
+                    entry: result.rows[0],
                 });
             })
             .catch((error) => {
