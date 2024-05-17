@@ -56,7 +56,7 @@ function mwValidTitleQuery(
     response: Response,
     next: NextFunction
 ) {
-    if (validationFunctions.isStringProvided(request.body.title)) {
+    if (validationFunctions.isStringProvided(request.query.title)) {
         next();
     } else {
         console.error('Invalid or missing Book Title');
@@ -90,7 +90,7 @@ function mwValidISBNQuery(
     next: NextFunction
 ) {
     //const isbn: string = request.query.isbn13 as string;
-    if (validationFunctions.isNumberProvided(request.body.isbn)) {
+    if (validationFunctions.isNumberProvided(request.query.isbn)) {
         next();
     } else {
         console.error('Invalid or missing ISBN');
@@ -267,11 +267,11 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiError (400: Bad Request) {String} message The requested ISBN is not valid
  */
 bookRouter.get(
-    '/isbn/:isbn',
+    '/isbn/',
     mwValidISBNQuery,
     (request: Request, response: Response) => {
         const theQuery = 'SELECT * FROM BOOKS WHERE isbn13 = $1';
-        const values = [request.params.isbn];
+        const values = [request.query.isbn];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -332,24 +332,24 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
-bookRouter.get(
-    '/',
-    // mwValidAuthor, //TODO add this middleware
-    (request: Request, response: Response) => {
-        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
-        const values = [request.params.author];
+// bookRouter.get(
+//     '/',
+//     // mwValidAuthor, //TODO add this middleware
+//     (request: Request, response: Response) => {
+//         const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
+//         const values = [request.params.author];
 
-        pool.query(theQuery, values)
-            .then((result) => {
-                response.json(result.rows);
-            })
-            .catch((err) => {
-                response.status(400).send({
-                    message: 'Error: ' + err.detail,
-                });
-            });
-    }
-);
+//         pool.query(theQuery, values)
+//             .then((result) => {
+//                 response.json(result.rows);
+//             })
+//             .catch((err) => {
+//                 response.status(400).send({
+//                     message: 'Error: ' + err.detail,
+//                 });
+//             });
+//     }
+// );
 
 /**
  * NOTE: This is a required endpoint
@@ -389,24 +389,24 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
-bookRouter.get(
-    '/',
-    // mwValidRating, //TODO add this middleware
-    (request: Request, response: Response) => {
-        const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
-        const values = [request.params.rating_avg];
+// bookRouter.get(
+//     '/',
+//     // mwValidRating, //TODO add this middleware
+//     (request: Request, response: Response) => {
+//         const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
+//         const values = [request.params.rating_avg];
 
-        pool.query(theQuery, values)
-            .then((result) => {
-                response.json(result.rows);
-            })
-            .catch((err) => {
-                response.status(400).send({
-                    message: 'Error: ' + err.detail,
-                });
-            });
-    }
-);
+//         pool.query(theQuery, values)
+//             .then((result) => {
+//                 response.json(result.rows);
+//             })
+//             .catch((err) => {
+//                 response.status(400).send({
+//                     message: 'Error: ' + err.detail,
+//                 });
+//             });
+//     }
+// );
 
 /**
  * @api {get} /books?title=:title Get books by title
@@ -447,11 +447,11 @@ bookRouter.get(
  */
 
 bookRouter.get(
-    '/title/:title',
+    '/title/',
     mwValidTitleQuery,
     (request: Request, response: Response) => {
         const theQuery = `SELECT * FROM books WHERE title ILIKE $1`;
-        const values = [`%${request.params.title}%`];
+        const values = [`%${request.query.title}%`];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -534,10 +534,10 @@ bookRouter.get(
  */
 
 bookRouter.put(
-    '/books/:isbn',
+    '/isbn',
     mwValidISBNQuery,
     async (request: Request, response: Response) => {
-        const { isbn } = request.params;
+        const { isbn } = request.query;
         const updates = request.body;
 
         // Check if updates object is empty
