@@ -16,6 +16,10 @@ const bookRouter: Router = express.Router();
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
+// formatting database row
+const format = (resultRow) =>
+    `id: ${resultRow.id}, isbn13: ${resultRow.isbn13}, authors: ${resultRow.authors}, publication_year: ${resultRow.publication_year}, original_title: ${resultRow.original_title}, title: ${resultRow.title}, rating_avg: ${resultRow.rating_avg}, rating_count: ${resultRow.rating_count}, rating_1_star: ${resultRow.rating_1_star}, rating_2_star: ${resultRow.rating_2_star}, rating_3_star: ${resultRow.rating_3_star}, rating_4_star: ${resultRow.rating_4_star}, rating_5_star: ${resultRow.rating_5_star}, image_url: ${resultRow.image_url}, image_small_url: ${resultRow.image_small_url}`;
+
 function mwValidRating(
     request: Request,
     response: Response,
@@ -295,7 +299,8 @@ bookRouter.get('/all', (request: Request, response: Response) => {
         .then((result) => {
             if (result.rowCount >= 1) {
                 response.send({
-                    entries: result.rows,
+                    // entries: result.rows,
+                    entries: result.rows.map(format),
                 });
             } else {
                 response.status(404).send({
@@ -553,7 +558,7 @@ bookRouter.get(
             .then((result) => {
                 if (result.rowCount > 0) {
                     response.send({
-                        entries: result.rows,
+                        entries: result.rows.map(format),
                     });
                 } else {
                     response.status(404).send({
@@ -895,7 +900,7 @@ bookRouter.post(
                 // result.rows array are the records returned from the SQL statement.
                 // An INSERT statement will return a single row, the row that was inserted.
                 response.status(201).send({
-                    entry: result.rows[0],
+                    entry: format(result.rows[0]),
                 });
             })
             .catch((error) => {
