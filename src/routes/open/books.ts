@@ -12,6 +12,9 @@ import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
 
+// Import the interfaces for typechecking
+import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
+
 const bookRouter: Router = express.Router();
 
 
@@ -380,7 +383,9 @@ bookRouter.get(
                 });
             });
     
-});
+    });
+
+    
 
 /**
  * @api {get} /books/title?title=:title Get books by title
@@ -432,7 +437,7 @@ bookRouter.get(
  * @apiSuccess {Object[]} The list of books with the given publication year
  * @apiUse BookSuccess
  *
- * @apiSuccessExample {json} Success-Response:
+ * @apiSuccessExample {json} Success-Response:\
  *   [
  *     {
  *       "isbn13": "9780451526342",
@@ -764,19 +769,34 @@ bookRouter.put(
  *
  * @apiBody {String[]} isbns array of ISBNs. Can be 1 or more
  *
+ * @apiSuccess {String} message The number of books deleted
  * @apiSuccess {String[]} isbns The ISBNs of the books that were deleted
- *
- * @apiError (400: Bad Request) {String} message At least one of the provided ISBNs is not valid
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *   "message": "2 book(s) deleted successfully.",
+ *   "isbns": [
+ *       "9780375700451",
+ *       "9780375700452"
+ *   ]
+ * }
+ * 
+ * @apiError (400: Bad Request) {String} message An error occurred during query execution
+ * @apiError (404: Not Found) {String} message No books found with the provided ISBNs
  */
 bookRouter.delete(
     '/isbn',
     (request: Request, response: Response) => {
-        const theQuery = 'DELETE FROM books WHERE isbn13 = $1';
-        const values = [request.body.isbn];
+        const isbns = request.body.isbns;
+        const placeholders = isbns.map((_, i) => `$${i + 1}`).join(','); // $1, $2, $3, etc.
+        const theQuery = `DELETE FROM books WHERE isbn13 IN (${placeholders});`;
 
-        pool.query(theQuery, values)
+        pool.query(theQuery, isbns)
             .then((result) => {
-                response.json(result.rows);
+                if (result.rowCount > 0) {
+                    response.send({ message: `${result.rowCount} book(s) deleted successfully.`, isbns: isbns });
+                } else {
+                    response.status(404).send({ message: 'No books found with the provided ISBNs.', isbns: isbns });
+                }
             })
             .catch(err => {
                 response.status(400).send({
@@ -785,8 +805,6 @@ bookRouter.delete(
             });
     }
 );
-
-
 
 
 
