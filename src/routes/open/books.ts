@@ -56,14 +56,13 @@ function mwValidTitleQuery(
     response: Response,
     next: NextFunction
 ) {
-    //const priority: string = request.query.title as string;
-    if (validationFunctions.isStringProvided(request.body.title)) {
+    if (validationFunctions.isStringProvided(request.params.title)) {
         next();
     } else {
         console.error('Invalid or missing Book Title');
         response.status(400).send({
             message:
-                'Invalid or missing  Book Title - please refer to documentation',
+                'Invalid or missing Book Title - please refer to documentation',
         });
     }
 }
