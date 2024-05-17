@@ -267,6 +267,32 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The requested ISBN is not valid
  */
+bookRouter.get(
+    '/isbn/:isbn',
+    mwValidISBNQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM BOOKS WHERE isbn13 = $1';
+        const values = [request.params.isbn];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount >= 1) {
+                    response.json(result.rows[0]);
+                } else {
+                    response.status(404).send({
+                        message: 'Book not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('DB Query error on GET by ISBN');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
