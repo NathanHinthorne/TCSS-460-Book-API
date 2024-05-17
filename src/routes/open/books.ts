@@ -547,31 +547,35 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
  */
-bookRouter.get('/publication_year/', (request: Request, response: Response) => {
-    const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
-    const values = [request.query.publication_year];
+bookRouter.get(
+    '/publication_year/',
+    mwValidPubYearQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.query.publication_year];
 
-    pool.query(theQuery, values)
-        .then((result) => {
-            if (result.rowCount > 0) {
-                response.send({
-                    entries: result.rows,
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entries: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: `No books of publication year ${request.query.publication_year} found`,
+                    });
+                }
+            })
+            .catch((error) => {
+                // log error
+                console.error('DB Query error on GET by publication year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
                 });
-            } else {
-                response.status(404).send({
-                    message: `No books of publication year ${request.query.publication_year} found`,
-                });
-            }
-        })
-        .catch((error) => {
-            // log error
-            console.error('DB Query error on GET by publication year');
-            console.error(error);
-            response.status(500).send({
-                message: 'server error - contact support',
             });
-        });
-});
+    }
+);
 
 // ---------------- PUT ----------------
 
