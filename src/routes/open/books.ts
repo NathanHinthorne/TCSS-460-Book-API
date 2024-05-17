@@ -272,6 +272,7 @@ function mwValidBookDescriptionBody(
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14"
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -335,6 +336,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiSuccessExample {json} Success-Response:
  * {
  *   "book": {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -375,6 +377,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -432,6 +435,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -488,6 +492,7 @@ bookRouter.get(
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -511,7 +516,7 @@ bookRouter.get(
 
 /**
  * Publish year
- * @api {get} /books?year=:year Get books by publication year
+ * @api {get} /books?publication_year=:publication_year Get books by publication year
  *
  * @apiDescription Get books by a given publication year
  *
@@ -520,13 +525,14 @@ bookRouter.get(
  *
  * @apiQuery {Number} publication_year The year the book was published
  *
- * @apiSuccess {Object[]} bookList The list of books with the given publication year
+ * @apiSuccess {Object[]} entries The list of books with the given publication year
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
  * {
- *   "bookList":  [
+ *   "entries":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -545,7 +551,8 @@ bookRouter.get(
  *   ]
  * }
  *
- * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (404: Not Found) {String} message No books of publication year ${request.query.publication_year} found
  */
 bookRouter.get(
     '/publication_year/',
@@ -838,7 +845,7 @@ bookRouter.put(
  * NOTE: Required endpoint
  * NOTE: This endpoint should allow null values for fields that are not required
  *
- * @api {post} /books Add a new book
+ * @api {post} /books/add_new_book/ Add a new book
  *
  * @apiDescription Add a new book to the database
  *
@@ -850,6 +857,7 @@ bookRouter.put(
  *
  * @apiParamExample {json} Request-Example:
  * {
+ *   "id": "14",
  *   "isbn13": "9780451526342",
  *   "authors": "George Orwell",
  *   "publication_year": "1945",
@@ -866,10 +874,11 @@ bookRouter.put(
  *   "image_small_url": "http://example.com/small_image.jpg"
  * }
  *
- * @apiSuccess {Object} book The book that was added
+ * @apiSuccess {Object} entry The book that was added
  * @apiUse BookSuccess
  *
- * @apiError (400: Bad Request) {String} message The provided book data is not valid
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (400: id Not Unique) {String} message id already exists
  */
 bookRouter.post(
     '/add_new_book/',

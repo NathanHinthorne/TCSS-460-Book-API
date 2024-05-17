@@ -143,7 +143,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": 10000,\n    \"isbn13\": 1,\n    \"authors\": \"test\",\n    \"publication_year\": 1,\n    \"original_title\": \"test\",\n    \"title\":\"test\",\n    \"rating_avg\": 1,\n    \"rating_count\": 1,\n    \"rating_1_star\": 1,\n    \"rating_2_star\": 1,\n    \"rating_3_star\": 1,\n    \"rating_4_star\": 1,\n    \"rating_5_star\": 1,\n    \"image_url\": \"test\",\n    \"image_small_url\": \"test\"\n}\n\n// {\n//     \"isbn13\":\"{{isbn}}\",\n//     \"authors\": \"{{authors}}\",\n//     \"publication_year\":\"{{pub year}}\",\n//     \"original_title\": \"{{org title}}\",\n//     \"title\":\"{{title}}\",\n//     \"rating_avg\": \"{{rating avg}}\",\n//     \"rating_count\":\"{{ratig count}}\",\n//     \"rating_1_star\": \"{{1 star}}\",\n//     \"rating_2_star\":\"{{2 star}}\",\n//     \"rating_3_star\": \"{{3 star}}\",\n//     \"rating_4_star\":\"{{4 star}}\",\n//     \"rating_5_star\": \"{{5 star}}\",\n//     \"image_url\":\"{{url}}\",\n//     \"image_small_url\": \"{{smal url}}\"\n// }",
+					"raw": "{\n    \"id\": \"10000\",\n    \"isbn13\": \"1\",\n    \"authors\": \"test\",\n    \"publication_year\": \"1\",\n    \"original_title\": \"test\",\n    \"title\":\"test\",\n    \"rating_avg\": \"1\",\n    \"rating_count\": \"1\",\n    \"rating_1_star\": \"1\",\n    \"rating_2_star\": \"1\",\n    \"rating_3_star\": \"1\",\n    \"rating_4_star\": \"1\",\n    \"rating_5_star\": \"1\",\n    \"image_url\": \"test\",\n    \"image_small_url\": \"test\"\n}\n\n// {\n//     \"isbn13\":\"{{isbn}}\",\n//     \"authors\": \"{{authors}}\",\n//     \"publication_year\":\"{{pub year}}\",\n//     \"original_title\": \"{{org title}}\",\n//     \"title\":\"{{title}}\",\n//     \"rating_avg\": \"{{rating avg}}\",\n//     \"rating_count\":\"{{ratig count}}\",\n//     \"rating_1_star\": \"{{1 star}}\",\n//     \"rating_2_star\":\"{{2 star}}\",\n//     \"rating_3_star\": \"{{3 star}}\",\n//     \"rating_4_star\":\"{{4 star}}\",\n//     \"rating_5_star\": \"{{5 star}}\",\n//     \"image_url\":\"{{url}}\",\n//     \"image_small_url\": \"{{smal url}}\"\n// }",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -260,7 +260,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"isbn13\": 1,\r\n    \"authors\": \"test\",\r\n    \"publication_year\": 1,\r\n    \"original_title\": \"test\",\r\n    \"title\":\"test\",\r\n    \"rating_avg\": 1,\r\n    \"rating_count\": 1,\r\n    \"rating_1_star\": 1,\r\n    \"rating_2_star\": 1,\r\n    \"rating_3_star\": 1,\r\n    \"rating_4_star\": 1,\r\n    \"rating_5_star\": 1,\r\n    \"image_url\": \"test\",\r\n    \"image_small_url\": \"test\"\r\n}",
+					"raw": "{\r\n    \"id\": \"1\",\r\n    \"isbn13\": \"1\",\r\n    \"authors\": \"test\",\r\n    \"publication_year\": \"1\",\r\n    \"original_title\": \"test\",\r\n    \"title\":\"test\",\r\n    \"rating_avg\": \"1\",\r\n    \"rating_count\": \"1\",\r\n    \"rating_1_star\": \"1\",\r\n    \"rating_2_star\": \"1\",\r\n    \"rating_3_star\": \"1\",\r\n    \"rating_4_star\": \"1\",\r\n    \"rating_5_star\": \"1\",\r\n    \"image_url\": \"test\",\r\n    \"image_small_url\": \"test\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
