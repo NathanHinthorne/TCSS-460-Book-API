@@ -299,8 +299,8 @@ bookRouter.get('/all', (request: Request, response: Response) => {
         .then((result) => {
             if (result.rowCount >= 1) {
                 response.send({
-                    // entries: result.rows,
-                    entries: result.rows.map(format),
+                    entries: result.rows,
+                    // entries: result.rows.map(format),
                 });
             } else {
                 response.status(404).send({
@@ -395,24 +395,24 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
-bookRouter.get(
-    '/',
-    // mwValidAuthor, //TODO add this middleware
-    (request: Request, response: Response) => {
-        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
-        const values = [request.params.author];
+// bookRouter.get(
+//     '/',
+//     // mwValidAuthor, //TODO add this middleware
+//     (request: Request, response: Response) => {
+//         const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
+//         const values = [request.params.author];
 
-        pool.query(theQuery, values)
-            .then((result) => {
-                response.json(result.rows);
-            })
-            .catch((err) => {
-                response.status(400).send({
-                    message: 'Error: ' + err.detail,
-                });
-            });
-    }
-);
+//         pool.query(theQuery, values)
+//             .then((result) => {
+//                 response.json(result.rows);
+//             })
+//             .catch((err) => {
+//                 response.status(400).send({
+//                     message: 'Error: ' + err.detail,
+//                 });
+//             });
+//     }
+// );
 
 /**
  * NOTE: This is a required endpoint
@@ -547,35 +547,31 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
  */
-bookRouter.get(
-    '/',
-    mwValidPubYearQuery,
-    (request: Request, response: Response) => {
-        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
-        const values = [request.query.publication_year];
+bookRouter.get('/publication_year/', (request: Request, response: Response) => {
+    const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+    const values = [request.query.publication_year];
 
-        pool.query(theQuery, values)
-            .then((result) => {
-                if (result.rowCount > 0) {
-                    response.send({
-                        entries: result.rows.map(format),
-                    });
-                } else {
-                    response.status(404).send({
-                        message: `No books of publication year ${request.query.publication_year} found`,
-                    });
-                }
-            })
-            .catch((error) => {
-                // log error
-                console.error('DB Query error on GET by publication year');
-                console.error(error);
-                response.status(500).send({
-                    message: 'server error - contact support',
+    pool.query(theQuery, values)
+        .then((result) => {
+            if (result.rowCount > 0) {
+                response.send({
+                    entries: result.rows.map(format),
                 });
+            } else {
+                response.status(404).send({
+                    message: `No books of publication year ${request.query.publication_year} found`,
+                });
+            }
+        })
+        .catch((error) => {
+            // log error
+            console.error('DB Query error on GET by publication year');
+            console.error(error);
+            response.status(500).send({
+                message: 'server error - contact support',
             });
-    }
-);
+        });
+});
 
 // ---------------- PUT ----------------
 
@@ -872,7 +868,7 @@ bookRouter.put(
  * @apiError (400: Bad Request) {String} message The provided book data is not valid
  */
 bookRouter.post(
-    '/',
+    '/addNewBook/',
     mwValidBookDescriptionBody,
     (request: Request, response: Response) => {
         const theQuery =
