@@ -10,12 +10,16 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
+// Import the interfaces for typechecking
+import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
+import { IUser } from '../../core/models';
 
 // Import the interfaces for typechecking
 import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
 
 
 const bookRouter: Router = express.Router();
+
 
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
@@ -24,6 +28,18 @@ const isNumberProvided = validationFunctions.isNumberProvided;
 const format = (resultRow) =>
     `id: ${resultRow.id}, isbn13: ${resultRow.isbn13}, authors: ${resultRow.authors}, publication_year: ${resultRow.publication_year}, original_title: ${resultRow.original_title}, title: ${resultRow.title}, rating_avg: ${resultRow.rating_avg}, rating_count: ${resultRow.rating_count}, rating_1_star: ${resultRow.rating_1_star}, rating_2_star: ${resultRow.rating_2_star}, rating_3_star: ${resultRow.rating_3_star}, rating_4_star: ${resultRow.rating_4_star}, rating_5_star: ${resultRow.rating_5_star}, image_url: ${resultRow.image_url}, image_small_url: ${resultRow.image_small_url}`;
 
+
+/*
+==============================================================
+2. Middlewear functions
+    a. These are functions that have access to 
+        the request object (req), the response object (res), 
+        and the next middleware function in the application’s 
+        request-response cycle. 
+    b. They can perform tasks like input validation, logging, 
+        or modifying the request/response objects.
+==============================================================
+*/
 
 function mwValidRating(
     request: Request,
@@ -127,49 +143,7 @@ function mwValidPubYearQuery(
         });
     }
 }
-/*
-==============================================================
-2. Middlewear functions
-    a. These are functions that have access to 
-        the request object (req), the response object (res), 
-        and the next middleware function in the application’s 
-        request-response cycle. 
-    b. They can perform tasks like input validation, logging, 
-        or modifying the request/response objects.
-==============================================================
-*/
 
-// function mwValidBook(
-
-// )
-
-// function mwValidAuthor(
-
-// )
-
-// function mwValidPubYear(
-//     request: Request,
-//     response: Response,
-//     next: NextFunction
-// ) {
-//     if (isNumberProvided(request.params.publication_year)) {
-//         next();
-//     } else {
-//         console.error('Invalid or missing publication year');
-//         response.status(400).send({
-//             message:
-//                 'Invalid or missing publication year - please refer to documentation',
-//         });
-//     }
-// }
-
-// function mwValidRating(
-
-// )
-
-// function mwValidIsbn(
-
-// )
 
 function mwValidBookDescriptionBody(
     request: Request,
@@ -305,10 +279,9 @@ bookRouter.get('/all', (request: Request, response: Response) => {
     pool.query(theQuery)
         .then((result) => {
             if (result.rowCount >= 1) {
-                response.send({
-                    entries: result.rows,
-                    // entries: result.rows.map(format),
-                });
+                const books: IBook[] = result.rows;
+                response.json(books);
+
             } else {
                 response.status(404).send({
                     message: 'No books were found in the database',
@@ -449,7 +422,6 @@ bookRouter.get(
             });
     }
 );
-
 
 /**
  * NOTE: This is a required endpoint
@@ -799,9 +771,8 @@ bookRouter.put(
                 }
             })
             .then((result) => {
-                response.send({
-                    entry: result.rows,
-                });
+                const books: IRatings[] = result.rows;
+                response.json(books);
             })
             .catch((error) => {
                 //log the error
@@ -908,9 +879,8 @@ bookRouter.put(
                 }
             })
             .then((result) => {
-                response.send({
-                    entry: result.rows,
-                });
+                const books: IRatings[] = result.rows;
+                response.json(books);
             })
             .catch((error) => {
                 //log the error
