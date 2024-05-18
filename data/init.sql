@@ -38,7 +38,7 @@ CREATE TABLE BOOKS (
     rating_2_star INT,
     rating_3_star INT,
     rating_4_star INT,
-    rating_5_star IFNT,
+    rating_5_star INT,
     image_url TEXT,
     image_small_url TEXT
 );

@@ -14,7 +14,32 @@ import { pool, validationFunctions } from '../../core/utilities';
 import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
 import { IUser } from '../../core/models';
 
+// Import the interfaces for typechecking
+import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
+
+
 const bookRouter: Router = express.Router();
+
+
+const isStringProvided = validationFunctions.isStringProvided;
+const isNumberProvided = validationFunctions.isNumberProvided;
+
+// formatting database row
+const format = (resultRow) =>
+    `id: ${resultRow.id}, isbn13: ${resultRow.isbn13}, authors: ${resultRow.authors}, publication_year: ${resultRow.publication_year}, original_title: ${resultRow.original_title}, title: ${resultRow.title}, rating_avg: ${resultRow.rating_avg}, rating_count: ${resultRow.rating_count}, rating_1_star: ${resultRow.rating_1_star}, rating_2_star: ${resultRow.rating_2_star}, rating_3_star: ${resultRow.rating_3_star}, rating_4_star: ${resultRow.rating_4_star}, rating_5_star: ${resultRow.rating_5_star}, image_url: ${resultRow.image_url}, image_small_url: ${resultRow.image_small_url}`;
+
+
+/*
+==============================================================
+2. Middlewear functions
+    a. These are functions that have access to 
+        the request object (req), the response object (res), 
+        and the next middleware function in the application’s 
+        request-response cycle. 
+    b. They can perform tasks like input validation, logging, 
+        or modifying the request/response objects.
+==============================================================
+*/
 
 function mwValidRating(
     request: Request,
@@ -54,13 +79,46 @@ function mwValidNewRating(
     }
 }
 
+function mwValidTitleQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (validationFunctions.isStringProvided(request.query.title)) {
+        next();
+    } else {
+        console.error('Invalid or missing Book Title');
+        response.status(400).send({
+            message:
+                'Invalid or missing Book Title - please refer to documentation',
+        });
+    }
+}
+
+function mwValidAuthorQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    //const priority: string = request.query.authors as string;
+    if (validationFunctions.isStringProvided(request.body.authors)) {
+        next();
+    } else {
+        console.error('Invalid or missing Author');
+        response.status(400).send({
+            message:
+                'Invalid or missing Author - please refer to documentation',
+        });
+    }
+}
+
 function mwValidISBNQuery(
     request: Request,
     response: Response,
     next: NextFunction
 ) {
     //const isbn: string = request.query.isbn13 as string;
-    if (validationFunctions.isNumberProvided(request.body.isbn)) {
+    if (validationFunctions.isNumberProvided(request.query.isbn)) {
         next();
     } else {
         console.error('Invalid or missing ISBN');
@@ -69,17 +127,55 @@ function mwValidISBNQuery(
         });
     }
 }
-/*
-==============================================================
-2. Middlewear functions
-    a. These are functions that have access to 
-        the request object (req), the response object (res), 
-        and the next middleware function in the application’s 
-        request-response cycle. 
-    b. They can perform tasks like input validation, logging, 
-        or modifying the request/response objects.
-==============================================================
-*/
+
+function mwValidPubYearQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (isNumberProvided(request.query.publication_year)) {
+        next();
+    } else {
+        console.error('Invalid or missing publication year');
+        response.status(400).send({
+            message:
+                'Invalid or missing publication year - please refer to documentation',
+        });
+    }
+}
+
+
+function mwValidBookDescriptionBody(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (
+        isNumberProvided(request.body.id) &&
+        isNumberProvided(request.body.isbn13) &&
+        isStringProvided(request.body.authors) &&
+        isNumberProvided(request.body.publication_year) &&
+        isStringProvided(request.body.original_title) &&
+        isStringProvided(request.body.title) &&
+        isNumberProvided(request.body.rating_avg) &&
+        isNumberProvided(request.body.rating_count) &&
+        isNumberProvided(request.body.rating_1_star) &&
+        isNumberProvided(request.body.rating_2_star) &&
+        isNumberProvided(request.body.rating_3_star) &&
+        isNumberProvided(request.body.rating_4_star) &&
+        isNumberProvided(request.body.rating_5_star) &&
+        isStringProvided(request.body.image_url) &&
+        isStringProvided(request.body.image_small_url)
+    ) {
+        next();
+    } else {
+        console.error('Missing required information');
+        response.status(400).send({
+            message:
+                'Missing required information - please refer to documentation',
+        });
+    }
+}
 
 /*
 ==============================================================
@@ -185,6 +281,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
             if (result.rowCount >= 1) {
                 const books: IBook[] = result.rows;
                 response.json(books);
+
             } else {
                 response.status(404).send({
                     message: 'No books were found in the database',
@@ -218,6 +315,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiSuccessExample {json} Success-Response:
  * {
  *   "book": {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -238,6 +336,32 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The requested ISBN is not valid
  */
+bookRouter.get(
+    '/isbn/',
+    mwValidISBNQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM BOOKS WHERE isbn13 = $1';
+        const values = [request.query.isbn];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount >= 1) {
+                    response.json(result.rows[0]);
+                } else {
+                    response.status(404).send({
+                        message: 'Book not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('DB Query error on GET by ISBN');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
@@ -258,6 +382,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -278,6 +403,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
+
 bookRouter.get(
     '/',
     // mwValidAuthor, //TODO add this middleware
@@ -315,6 +441,7 @@ bookRouter.get(
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -371,6 +498,7 @@ bookRouter.get(
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -392,9 +520,36 @@ bookRouter.get(
  * @apiError (400: Bad Request) {String} message The provided title is not valid or supported
  */
 
+bookRouter.get(
+    '/title/',
+    mwValidTitleQuery,
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE title ILIKE $1`;
+        const values = [`%${request.query.title}%`];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount >= 1) {
+                    response.json(result.rows);
+                } else {
+                    response.status(404).send({
+                        message: 'Books not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('DB Query error on GET by title');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
+
 /**
  * Publish year
- * @api {get} /books?year=:year Get books by publication year
+ * @api {get} /books?publication_year=:publication_year Get books by publication year
  *
  * @apiDescription Get books by a given publication year
  *
@@ -403,13 +558,14 @@ bookRouter.get(
  *
  * @apiQuery {Number} publication_year The year the book was published
  *
- * @apiSuccess {Object[]} bookList The list of books with the given publication year
+ * @apiSuccess {Object[]} entries The list of books with the given publication year
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
  * {
- *   "bookList":  [
+ *   "entries":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -428,8 +584,38 @@ bookRouter.get(
  *   ]
  * }
  *
- * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (404: Not Found) {String} message No books of publication year ${request.query.publication_year} found
  */
+bookRouter.get(
+    '/publication_year/',
+    mwValidPubYearQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.query.publication_year];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entries: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: `No books of publication year ${request.query.publication_year} found`,
+                    });
+                }
+            })
+            .catch((error) => {
+                // log error
+                console.error('DB Query error on GET by publication year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 // ---------------- PUT ----------------
 
@@ -451,6 +637,49 @@ bookRouter.get(
  * @apiError (400: Bad Request) {String} message The provided ISBN or fields are not valid
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
+
+bookRouter.put(
+    '/isbn',
+    mwValidISBNQuery,
+    async (request: Request, response: Response) => {
+        const { isbn } = request.query;
+        const updates = request.body;
+
+        // Check if updates object is empty
+        if (Object.keys(updates).length === 0) {
+            return response.status(400).send({
+                message: 'No fields provided for update',
+            });
+        }
+
+        // Generate dynamic query parts for the fields to update
+        const setClause = Object.keys(updates)
+            .map((key, index) => `${key} = $${index + 2}`)
+            .join(', ');
+
+        const values = [isbn, ...Object.values(updates)];
+
+        const theQuery = `UPDATE books SET ${setClause} WHERE isbn13 = $1 RETURNING *`;
+
+        try {
+            const result = await pool.query(theQuery, values);
+
+            if (result.rowCount >= 1) {
+                response.json(result.rows[0]);
+            } else {
+                response.status(404).send({
+                    message: 'Book not found',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on PUT');
+            console.error(error);
+            response.status(500).send({
+                message: 'Server error - contact support',
+            });
+        }
+    }
+);
 
 /**
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
@@ -702,7 +931,7 @@ bookRouter.put(
  * NOTE: Required endpoint
  * NOTE: This endpoint should allow null values for fields that are not required
  *
- * @api {post} /books Add a new book
+ * @api {post} /books/add_new_book/ Add a new book
  *
  * @apiDescription Add a new book to the database
  *
@@ -714,6 +943,7 @@ bookRouter.put(
  *
  * @apiParamExample {json} Request-Example:
  * {
+ *   "id": "14",
  *   "isbn13": "9780451526342",
  *   "authors": "George Orwell",
  *   "publication_year": "1945",
@@ -730,11 +960,64 @@ bookRouter.put(
  *   "image_small_url": "http://example.com/small_image.jpg"
  * }
  *
- * @apiSuccess {Object} book The book that was added
+ * @apiSuccess {Object} entry The book that was added
  * @apiUse BookSuccess
  *
- * @apiError (400: Bad Request) {String} message The provided book data is not valid
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (400: id Not Unique) {String} message id already exists
  */
+bookRouter.post(
+    '/add_new_book/',
+    mwValidBookDescriptionBody,
+    (request: Request, response: Response) => {
+        const theQuery =
+            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+        const values = [
+            request.body.id,
+            request.body.isbn13,
+            request.body.authors,
+            request.body.publication_year,
+            request.body.original_title,
+            request.body.title,
+            request.body.rating_avg,
+            request.body.rating_count,
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+            request.body.image_url,
+            request.body.image_small_url,
+        ];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                // result.rows array are the records returned from the SQL statement.
+                // An INSERT statement will return a single row, the row that was inserted.
+                response.status(201).send({
+                    entry: result.rows[0],
+                });
+            })
+            .catch((error) => {
+                if (
+                    error.detail != undefined &&
+                    (error.detail as string).endsWith('already exists.')
+                ) {
+                    console.error('id already exists');
+                    response.status(400).send({
+                        message: 'id already exists',
+                    });
+                } else {
+                    //log the error
+                    console.error('DB Query error on POST');
+                    console.error(error);
+                    response.status(500).send({
+                        message: 'server error - contact support',
+                    });
+                }
+            });
+    }
+);
 
 // ---------------- DELETE ----------------
 
@@ -772,6 +1055,7 @@ bookRouter.delete(
             });
     }
 );
+
 
 // "return" the router
 export { bookRouter };
