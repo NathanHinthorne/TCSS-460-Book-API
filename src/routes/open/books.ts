@@ -38,6 +38,22 @@ const format = (resultRow) =>
 ==============================================================
 */
 
+function mwValidRatingQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (validationFunctions.isNumberProvided(request.query.rating)) {
+        next();
+    } else {
+        console.error('Invalid or missing Rating');
+        response.status(400).send({
+            message:
+                'Invalid or missing Rating - please refer to documentation',
+        });
+    }
+}
+
 function mwValidRating(
     request: Request,
     response: Response,
@@ -97,8 +113,7 @@ function mwValidAuthorQuery(
     response: Response,
     next: NextFunction
 ) {
-    //const priority: string = request.query.authors as string;
-    if (validationFunctions.isStringProvided(request.body.authors)) {
+    if (validationFunctions.isStringProvided(request.query.author)) {
         next();
     } else {
         console.error('Invalid or missing Author');
@@ -114,13 +129,42 @@ function mwValidISBNQuery(
     response: Response,
     next: NextFunction
 ) {
-    //const isbn: string = request.query.isbn13 as string;
     if (validationFunctions.isNumberProvided(request.query.isbn)) {
         next();
     } else {
         console.error('Invalid or missing ISBN');
         response.status(400).send({
             message: 'Invalid or missing ISBN - please refer to documentation',
+        });
+    }
+}
+
+function mwValidISBN(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (validationFunctions.isNumberProvided(request.body.isbn)) {
+        next();
+    } else {
+        console.error('Invalid or missing ISBN');
+        response.status(400).send({
+            message: 'Invalid or missing ISBN - please refer to documentation',
+        });
+    }
+}
+
+function mwValidISBNArray(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (Array.isArray(request.body.isbns)) {
+        next();
+    } else {
+        console.error('Invalid or missing ISBNs');
+        response.status(400).send({
+            message: 'Invalid or missing ISBNs - please refer to documentation',
         });
     }
 }
@@ -149,7 +193,6 @@ function mwValidBookDescriptionBody(
     next: NextFunction
 ) {
     if (
-        isNumberProvided(request.body.id) &&
         isNumberProvided(request.body.isbn13) &&
         isStringProvided(request.body.authors) &&
         isNumberProvided(request.body.publication_year) &&
@@ -396,7 +439,7 @@ bookRouter.get(
  */
 bookRouter.get(
     '/author/',
-    // mwValidAuthorQuery, 
+    mwValidAuthorQuery,
     (request: Request, response: Response) => {
         const theQuery = `SELECT * FROM books WHERE authors ILIKE $1`;
         const values = [`%${request.query.author}%`];
@@ -452,7 +495,7 @@ bookRouter.get(
  */
 bookRouter.get(
     '/rating/',
-    // mwValidRating,
+    mwValidRatingQuery,
     (request: Request, response: Response) => {
         const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
         const values = [request.query.rating];
@@ -548,7 +591,7 @@ bookRouter.get(
  * @apiSuccess {Object[]} The list of books with the given publication year
  * @apiUse BookSuccess
  *
- * @apiSuccessExample {json} Success-Response:\
+ * @apiSuccessExample {json} Success-Response:
  *   [
  *     {
  *       "id": "14",
@@ -716,8 +759,8 @@ bookRouter.put(
 bookRouter.put(
     '/newRating',
     mwValidRating,
-    mwValidISBNQuery,
-    (request: Request, response: Response, next: NextFunction) => {
+    mwValidISBN,
+    (request: Request, response: Response) => {
         const rate = 'rating_' + request.body.changeRating + '_star';
         const selectBookInfo = 'SELECT * FROM Books WHERE isbn13 = $1';
         const values = [request.body.isbn];
@@ -820,7 +863,7 @@ bookRouter.put(
     '/newRating/admin',
     mwValidRating,
     mwValidNewRating,
-    mwValidISBNQuery,
+    mwValidISBN,
     (request: Request, response: Response, next: NextFunction) => {
         const rate = 'rating_' + request.body.changeRating + '_star';
         const selectBookInfo = `SELECT rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, ${rate} AS "oldRating"  FROM Books WHERE isbn13 = $1`;
@@ -899,7 +942,6 @@ bookRouter.put(
  *
  * @apiParamExample {json} Request-Example:
  * {
- *   "id": "14",
  *   "isbn13": "9780451526342",
  *   "authors": "George Orwell",
  *   "publication_year": "1945",
@@ -926,33 +968,37 @@ bookRouter.post(
     '/add_new_book/',
     mwValidBookDescriptionBody,
     (request: Request, response: Response) => {
-        const theQuery =
-            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
-        const values = [
-            request.body.id,
-            request.body.isbn13,
-            request.body.authors,
-            request.body.publication_year,
-            request.body.original_title,
-            request.body.title,
-            request.body.rating_avg,
-            request.body.rating_count,
-            request.body.rating_1_star,
-            request.body.rating_2_star,
-            request.body.rating_3_star,
-            request.body.rating_4_star,
-            request.body.rating_5_star,
-            request.body.image_url,
-            request.body.image_small_url,
-        ];
+        pool.query('SELECT MAX(id) FROM books')
+            .then((result) => {
+                const nextId = result.rows[0].max + 1;
 
-        pool.query(theQuery, values)
+                const theQuery =
+                    'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+                const values = [
+                    nextId,
+                    request.body.isbn13,
+                    request.body.authors,
+                    request.body.publication_year,
+                    request.body.original_title,
+                    request.body.title,
+                    request.body.rating_avg,
+                    request.body.rating_count,
+                    request.body.rating_1_star,
+                    request.body.rating_2_star,
+                    request.body.rating_3_star,
+                    request.body.rating_4_star,
+                    request.body.rating_5_star,
+                    request.body.image_url,
+                    request.body.image_small_url,
+                ];
+        
+                // insert the new book with the next ID
+                return pool.query(theQuery, values)
+            
+            })
             .then((result) => {
                 const book: IBook[] = result.rows[0];
-                response.status(201).send(
-                    // entry: result.rows[0],
-                    book
-                );
+                response.status(201).send(book);
             })
             .catch((error) => {
                 if (
@@ -1005,6 +1051,7 @@ bookRouter.post(
  */
 bookRouter.delete(
     '/isbn',
+    mwValidISBNArray,
     (request: Request, response: Response) => {
         const isbns = request.body.isbns;
         const placeholders = isbns.map((_, i) => `$${i + 1}`).join(','); // $1, $2, $3, etc.
