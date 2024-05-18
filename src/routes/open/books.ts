@@ -17,6 +17,12 @@ import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
 
 const bookRouter: Router = express.Router();
 
+const isStringProvided = validationFunctions.isStringProvided;
+const isNumberProvided = validationFunctions.isNumberProvided;
+
+// formatting database row
+const format = (resultRow) =>
+    `id: ${resultRow.id}, isbn13: ${resultRow.isbn13}, authors: ${resultRow.authors}, publication_year: ${resultRow.publication_year}, original_title: ${resultRow.original_title}, title: ${resultRow.title}, rating_avg: ${resultRow.rating_avg}, rating_count: ${resultRow.rating_count}, rating_1_star: ${resultRow.rating_1_star}, rating_2_star: ${resultRow.rating_2_star}, rating_3_star: ${resultRow.rating_3_star}, rating_4_star: ${resultRow.rating_4_star}, rating_5_star: ${resultRow.rating_5_star}, image_url: ${resultRow.image_url}, image_small_url: ${resultRow.image_small_url}`;
 
 
 /*
@@ -120,6 +126,56 @@ function mwValidISBNQuery(
 }
 
 
+function mwValidPubYearQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (isNumberProvided(request.query.publication_year)) {
+        next();
+    } else {
+        console.error('Invalid or missing publication year');
+        response.status(400).send({
+            message:
+                'Invalid or missing publication year - please refer to documentation',
+        });
+    }
+}
+
+
+
+function mwValidBookDescriptionBody(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (
+        isNumberProvided(request.body.id) &&
+        isNumberProvided(request.body.isbn13) &&
+        isStringProvided(request.body.authors) &&
+        isNumberProvided(request.body.publication_year) &&
+        isStringProvided(request.body.original_title) &&
+        isStringProvided(request.body.title) &&
+        isNumberProvided(request.body.rating_avg) &&
+        isNumberProvided(request.body.rating_count) &&
+        isNumberProvided(request.body.rating_1_star) &&
+        isNumberProvided(request.body.rating_2_star) &&
+        isNumberProvided(request.body.rating_3_star) &&
+        isNumberProvided(request.body.rating_4_star) &&
+        isNumberProvided(request.body.rating_5_star) &&
+        isStringProvided(request.body.image_url) &&
+        isStringProvided(request.body.image_small_url)
+    ) {
+        next();
+    } else {
+        console.error('Missing required information');
+        response.status(400).send({
+            message:
+                'Missing required information - please refer to documentation',
+        });
+    }
+}
+
 /*
 ==============================================================
 3. Endpoint handlers
@@ -219,10 +275,11 @@ bookRouter.get('/all', (request: Request, response: Response) => {
             if (result.rowCount >= 1) {
                 response.send({
                     entries: result.rows,
+                    // entries: result.rows.map(format),
                 });
             } else {
                 response.status(404).send({
-                    message: 'Books not found',
+                    message: 'No books were found in the database',
                 });
             }
         })
@@ -253,6 +310,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiSuccessExample {json} Success-Response:
  * {
  *   "book": {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -292,6 +350,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiSuccessExample {json} Success-Response:
  *   [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -347,6 +406,7 @@ bookRouter.get(
  * @apiSuccessExample {json} Success-Response:
  *   [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -377,15 +437,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
     });
 
-    
 
 /**
  * @api {get} /books/title?title=:title Get books by title
@@ -403,6 +461,7 @@ bookRouter.get(
  * @apiSuccessExample {json} Success-Response:
  *   [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -425,7 +484,7 @@ bookRouter.get(
 
 /**
  * Publish year
- * @api {get} /books/year?year=:year Get books by publication year
+ * @api {get} /books/publication_year?publication_year=:publication_year Get books by publication year
  *
  * @apiDescription Get books by a given publication year
  *
@@ -434,12 +493,14 @@ bookRouter.get(
  *
  * @apiQuery {Number} publication_year The year the book was published
  *
+
  * @apiSuccess {Object[]} The list of books with the given publication year
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:\
  *   [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -457,8 +518,38 @@ bookRouter.get(
  *     }
  *   ]
  *
- * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (404: Not Found) {String} message No books of publication year ${request.query.publication_year} found
  */
+bookRouter.get(
+    '/publication_year/',
+    mwValidPubYearQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.query.publication_year];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entries: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: `No books of publication year ${request.query.publication_year} found`,
+                    });
+                }
+            })
+            .catch((error) => {
+                // log error
+                console.error('DB Query error on GET by publication year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 // ---------------- PUT ----------------
 
@@ -493,10 +584,33 @@ bookRouter.get(
  * @apiName IncrementRating
  * @apiGroup User
  *
- * @apiParam {Number} isbn The ISBN of the book to be updated
- * @apiParam {Number} rating The rating type to be updated (1-5)
+ * @apiBody {Number} chageRating The rating type to be updated by one vote (1-5)
+ * @apiBody {Number} isbn The ISBN of the book to be updated
  *
- * @apiSuccess {Object} book The updated book
+ * @apiSuccess {Object} The rating count, average and rating values are all updated
+ *                      for the spefifed book
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *    "entry": [
+ *        {
+ *            "id": 7,
+ *            "isbn13": "9780618260300",
+ *            "authors": "J.R.R. Tolkien",
+ *            "publication_year": 1937,
+ *            "original_title": "The Hobbit or There and Back Again",
+ *            "title": "The Hobbit",
+ *            "rating_avg": 3.56,
+ *            "rating_count": 36,
+ *            "rating_1_star": 4,
+ *            "rating_2_star": 2,
+ *            "rating_3_star": 10,
+ *            "rating_4_star": 10,
+ *            "rating_5_star": 10,
+ *            "image_url": "https://images.gr-assets.com/books/1372847500m/5907.jpg",
+ *            "image_small_url": "https://images.gr-assets.com/books/1372847500s/5907.jpg"
+ *        }
+ *    ]
+ *}
  * @apiUse BookSuccess
  *
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
@@ -538,7 +652,7 @@ bookRouter.put(
                             rating_5_star * 5 +
                             request.body.changeRating) /
                         total
-                    ).toFixed(6);
+                    ).toFixed(2);
                     const updateQueryRating = `UPDATE BOOKS SET ${rate} = ${newRating} + 1, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
                     return pool.query(updateQueryRating, values);
                 } else {
@@ -549,23 +663,7 @@ bookRouter.put(
             })
             .then((result) => {
                 response.send({
-                    entry:
-                        'Updated: ' +
-                        result.rows[0].title +
-                        ' ratings: 1 star -> ' +
-                        result.rows[0].rating_1_star +
-                        '  2 star -> ' +
-                        result.rows[0].rating_2_star +
-                        ' 3 star -> ' +
-                        result.rows[0].rating_3_star +
-                        ' 4 star -> ' +
-                        result.rows[0].rating_4_star +
-                        ' 5 star -> ' +
-                        result.rows[0].rating_5_star +
-                        ' total: ' +
-                        result.rows[0].rating_count +
-                        ' AVERAGE: ' +
-                        result.rows[0].rating_avg,
+                    entry: result.rows,
                 });
             })
             .catch((error) => {
@@ -590,12 +688,33 @@ bookRouter.put(
  * @apiName UpdateRating
  * @apiGroup Admin
  *
- * @apiParam {Number} isbn The ISBN of the book to be updated
- * @apiParam {Number} rating The rating type to be updated (1-5)
- *
- * @apiBody {Number} count The new count for the specified rating
+ * @apiBody {Number} chageRating The rating type to be updated (1-5)
+ * @apiBody {Number} newRating The new count for the specified rating type
+ * @apiBody {Number} isbn The ISBN of the book to be updated
  *
  * @apiSuccess {Object} book The updated book
+ * @apiSuccessExample {json} Success-Response:
+ *{
+ *"entry": [
+ *        {
+ *            "id": 7,
+ *            "isbn13": "9780618260300",
+ *            "authors": "J.R.R. Tolkien",
+ *            "publication_year": 1937,
+ *            "original_title": "The Hobbit or There and Back Again",
+ *            "title": "The Hobbit",
+ *            "rating_avg": 3.88,
+ *            "rating_count": 32,
+ *            "rating_1_star": 0,
+ *            "rating_2_star": 2,
+ *            "rating_3_star": 10,
+ *            "rating_4_star": 10,
+ *            "rating_5_star": 10,
+ *            "image_url": "https://images.gr-assets.com/books/1372847500m/5907.jpg",
+ *            "image_small_url": "https://images.gr-assets.com/books/1372847500s/5907.jpg"
+ *        }
+ *    ]
+ *}
  * @apiUse BookSuccess
  *
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
@@ -641,7 +760,7 @@ bookRouter.put(
                             request.body.newRating *
                                 request.body.changeRating) /
                         total
-                    ).toFixed(6);
+                    ).toFixed(2);
                     const values2 = [request.body.isbn, request.body.newRating];
                     const updateQueryRating = `UPDATE BOOKS SET ${rate} = $2, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
                     return pool.query(updateQueryRating, values2);
@@ -653,23 +772,7 @@ bookRouter.put(
             })
             .then((result) => {
                 response.send({
-                    entry:
-                        'Updated: ' +
-                        result.rows[0].title +
-                        ' ratings: 1 star -> ' +
-                        result.rows[0].rating_1_star +
-                        '  2 star -> ' +
-                        result.rows[0].rating_2_star +
-                        ' 3 star -> ' +
-                        result.rows[0].rating_3_star +
-                        ' 4 star -> ' +
-                        result.rows[0].rating_4_star +
-                        ' 5 star -> ' +
-                        result.rows[0].rating_5_star +
-                        ' total: ' +
-                        result.rows[0].rating_count +
-                        ' AVERAGE: ' +
-                        result.rows[0].rating_avg,
+                    entry: result.rows,
                 });
             })
             .catch((error) => {
@@ -690,7 +793,7 @@ bookRouter.put(
  * NOTE: Required endpoint
  * NOTE: This endpoint should allow null values for fields that are not required
  *
- * @api {post} /books/add Add a new book
+ * @api {post} /books/add_new_book/ Add a new book
  *
  * @apiDescription Add a new book to the database
  *
@@ -702,6 +805,7 @@ bookRouter.put(
  *
  * @apiParamExample {json} Request-Example:
  * {
+ *   "id": "14",
  *   "isbn13": "9780451526342",
  *   "authors": "George Orwell",
  *   "publication_year": "1945",
@@ -718,11 +822,64 @@ bookRouter.put(
  *   "image_small_url": "http://example.com/small_image.jpg"
  * }
  *
- * @apiSuccess {Object} book The book that was added
+ * @apiSuccess {Object} entry The book that was added
  * @apiUse BookSuccess
  *
- * @apiError (400: Bad Request) {String} message The provided book data is not valid
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (400: id Not Unique) {String} message id already exists
  */
+bookRouter.post(
+    '/add_new_book/',
+    mwValidBookDescriptionBody,
+    (request: Request, response: Response) => {
+        const theQuery =
+            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+        const values = [
+            request.body.id,
+            request.body.isbn13,
+            request.body.authors,
+            request.body.publication_year,
+            request.body.original_title,
+            request.body.title,
+            request.body.rating_avg,
+            request.body.rating_count,
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+            request.body.image_url,
+            request.body.image_small_url,
+        ];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                // result.rows array are the records returned from the SQL statement.
+                // An INSERT statement will return a single row, the row that was inserted.
+                response.status(201).send({
+                    entry: result.rows[0],
+                });
+            })
+            .catch((error) => {
+                if (
+                    error.detail != undefined &&
+                    (error.detail as string).endsWith('already exists.')
+                ) {
+                    console.error('id already exists');
+                    response.status(400).send({
+                        message: 'id already exists',
+                    });
+                } else {
+                    //log the error
+                    console.error('DB Query error on POST');
+                    console.error(error);
+                    response.status(500).send({
+                        message: 'server error - contact support',
+                    });
+                }
+            });
+    }
+);
 
 // ---------------- DELETE ----------------
 
@@ -774,6 +931,7 @@ bookRouter.delete(
             });
     }
 );
+
 
 
 
