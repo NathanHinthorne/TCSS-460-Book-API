@@ -683,37 +683,6 @@ bookRouter.put(
     }
 );
 
-// I haven't finished these two endpoints yet. -Nathan
-/*
- * Other endpoints to potentially add later:
- * Put:
- * Title
- * @api {put} /title
- * 
- * @apiDescription Update the title of a book
- * 
- * @apiName UpdateTitle
- * @apiGroup Admin
- * 
- * @apiSuccess {String} title The books title
- * @apiSuccessExample Success-Response:
-    { "title":  "Animal Farm" }
- */
-/*
- * Author
- * @api {put} /author
- *
- * @apiDescription Update the author of a book
- *
- * @apiName UpdateAuthor6
- * @apiGroup Admin
- *
- * @apiQuery {String} title The title of the book to be updated
- *
- * @apiSuccess {String} title
- * @apiSuccessExample {json} Success-Response:
- *   { "titles":  "..." }
- */
 
 // ---------------- POST ----------------
 
