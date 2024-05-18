@@ -10,9 +10,11 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
+// Import the interfaces for typechecking
+import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
+import { IUser } from '../../core/models';
 
 const bookRouter: Router = express.Router();
-
 
 function mwValidRating(
     request: Request,
@@ -48,40 +50,6 @@ function mwValidNewRating(
         response.status(400).send({
             message:
                 'Invalid or missing New Rating - please refer to documentation',
-        });
-    }
-}
-
-function mwValidTitleQuery(
-    request: Request,
-    response: Response,
-    next: NextFunction
-) {
-    //const priority: string = request.query.title as string;
-    if (validationFunctions.isStringProvided(request.body.title)) {
-        next();
-    } else {
-        console.error('Invalid or missing Book Title');
-        response.status(400).send({
-            message:
-                'Invalid or missing  Book Title - please refer to documentation',
-        });
-    }
-}
-
-function mwValidAuthorQuery(
-    request: Request,
-    response: Response,
-    next: NextFunction
-) {
-    //const priority: string = request.query.authors as string;
-    if (validationFunctions.isStringProvided(request.body.authors)) {
-        next();
-    } else {
-        console.error('Invalid or missing Author');
-        response.status(400).send({
-            message:
-                'Invalid or missing Author - please refer to documentation',
         });
     }
 }
@@ -215,9 +183,8 @@ bookRouter.get('/all', (request: Request, response: Response) => {
     pool.query(theQuery)
         .then((result) => {
             if (result.rowCount >= 1) {
-                response.send({
-                    entries: result.rows,
-                });
+                const books: IBook[] = result.rows;
+                response.json(books);
             } else {
                 response.status(404).send({
                     message: 'No books were found in the database',
@@ -322,14 +289,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
-});
-
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
@@ -380,13 +346,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
-});
+    }
+);
 
 /**
  * @api {get} /books?title=:title Get books by title
@@ -576,9 +542,8 @@ bookRouter.put(
                 }
             })
             .then((result) => {
-                response.send({
-                    entry: result.rows,
-                });
+                const books: IRatings[] = result.rows;
+                response.json(books);
             })
             .catch((error) => {
                 //log the error
@@ -685,9 +650,8 @@ bookRouter.put(
                 }
             })
             .then((result) => {
-                response.send({
-                    entry: result.rows,
-                });
+                const books: IRatings[] = result.rows;
+                response.json(books);
             })
             .catch((error) => {
                 //log the error
@@ -801,15 +765,13 @@ bookRouter.delete(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-});
-
-
+    }
+);
 
 // "return" the router
 export { bookRouter };
-
