@@ -1,480 +1,186 @@
 {
 	"info": {
-		"_postman_id": "4f802975-ed66-450f-a284-5d6d862f3f7b",
-		"name": "books",
+		"_postman_id": "59c61fdc-a5c0-41e0-9122-56cc9ae37a75",
+		"name": "Books",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "34355612"
+		"_exporter_id": "33958984"
 	},
 	"item": [
 		{
-			"name": "{{base_url}}/books/newRatting/admin",
+			"name": "localhost:4000/books/publication_year?publication_year=2008",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Response status should be 200\", () => {",
-							"    pm.response.to.have.status(200);",
-							"})",
+							"const response = pm.response.json();",
+							"const book = response[0];",
 							"",
-							"pm.test(\"Should get only one result back\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.be.an('object');",
-							"    pm.expect(jsonData.entry).to.be.an('array').and.not.empty;",
-							"    pm.expect(jsonData.entry).to.be.lengthOf(1);",
-							"});",
-							"",
-							"pm.test(\"Body should have an isbn13\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('isbn13');",
-							"    pm.expect(parseInt(entry.isbn13)).to.be.a('number');",
-							"    pm.expect(parseInt(entry.isbn13)).to.be.at.least(0);",
-							"});",
-							"",
-							"pm.test(\"Body should have a title\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('title');",
-							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
-							"",
+							"pm.test(\"Check list structure\", function() {",
+							"\tpm.expect(book).to.be.an('object');",
+							"\tpm.expect(book).to.have.property('isbn13');",
+							"\tpm.expect(book).to.have.property('authors');",
+							"\tpm.expect(book).to.have.property('publication_year');",
+							"\tpm.expect(book).to.have.property('original_title');",
+							"\tpm.expect(book).to.have.property('title');",
+							"\tpm.expect(book).to.have.property('rating_avg');",
+							"\tpm.expect(book).to.have.property('rating_count');",
+							"\tpm.expect(book).to.have.property('rating_1_star');",
+							"\tpm.expect(book).to.have.property('rating_2_star');",
+							"\tpm.expect(book).to.have.property('rating_3_star');",
+							"\tpm.expect(book).to.have.property('rating_4_star');",
+							"\tpm.expect(book).to.have.property('rating_5_star');",
+							"\tpm.expect(book).to.have.property('image_url');",
+							"\tpm.expect(book).to.have.property('image_small_url');",
 							"});",
 							"",
-							"pm.test(\"Body should have an Author\", function () {",
-							"    const jsonData = pm.response.json()",
-							"    pm.expect(jsonData).to.be.an('object');",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('authors');",
-							"    pm.expect(entry.authors).to.be.a('string').and.not.empty;",
+							"pm.test(\"Check first returned book for publication year 2008\", function() {",
+							"    pm.expect(book.isbn13).to.eql('9780439023480');",
+							"\tpm.expect(book.authors).to.eql('Suzanne Collins');",
+							"\tpm.expect(book.publication_year).to.eql(2008);",
+							"\tpm.expect(book.original_title).to.eql('The Hunger Games');",
+							"\tpm.expect(book.title).to.eql('The Hunger Games (The Hunger Games, #1)');",
+							"\tpm.expect(book.rating_avg).to.eql(4.34);",
+							"\tpm.expect(book.rating_count).to.eql(4780653);",
+							"\tpm.expect(book.rating_1_star).to.eql(66715);",
+							"\tpm.expect(book.rating_2_star).to.eql(127936);",
+							"\tpm.expect(book.rating_3_star).to.eql(560092);",
+							"\tpm.expect(book.rating_4_star).to.eql(1481305);",
+							"\tpm.expect(book.rating_5_star).to.eql(2706317);",
+							"\tpm.expect(book.image_url).to.eql('https://images.gr-assets.com/books/1447303603m/2767052.jpg');",
+							"\tpm.expect(book.image_small_url).to.eql('https://images.gr-assets.com/books/1447303603s/2767052.jpg');",
 							"});",
 							"",
-							"pm.test(\"Body has publication year\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('publication_year');",
-							"    pm.expect(entry.publication_year).to.be.a('number');",
-							"});",
-							"",
-							"pm.test(\"Body has orginal title\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('original_title');",
-							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
-							"});",
-							"",
-							"pm.test(\"Body has an non negative average rating\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_avg');",
-							"    pm.expect(entry.rating_avg).to.be.a('number');",
-							"    pm.expect(entry.rating_avg).to.be.at.least(0);",
-							"});",
-							"",
-							"pm.test(\"Body has an non negative number of ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_count');",
-							"    pm.expect(entry.rating_count).to.be.a('number');",
-							"    pm.expect(entry.rating_count).to.be.at.least(0); ",
-							"});",
-							"pm.test(\"Body has an non negative 1 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_1_star');",
-							"    pm.expect(entry.rating_1_star).to.be.a('number');",
-							"    pm.expect(entry.rating_1_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 2 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_2_star');",
-							"    pm.expect(entry.rating_2_star).to.be.a('number');",
-							"    pm.expect(entry.rating_2_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 3 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_3_star');",
-							"    pm.expect(entry.rating_3_star).to.be.a('number');",
-							"    pm.expect(entry.rating_3_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 4 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_4_star');",
-							"    pm.expect(entry.rating_4_star).to.be.a('number');",
-							"    pm.expect(entry.rating_4_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 5 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_5_star');",
-							"    pm.expect(entry.rating_5_star).to.be.a('number');",
-							"    pm.expect(entry.rating_5_star).to.be.at.least(0);",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"pm.collectionVariables.set(\"name\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));",
-							"pm.collectionVariables.set(\"msg\", pm.variables.replaceIn(\"{{$randomPhrase}}\"));"
+							"// // test for missing year in url (i.e. no year given)",
+							"// pm.test(\"Response status should be 400\", () => {",
+							"//     pm.response.to.have.status(400);",
+							"// });"
 						],
 						"type": "text/javascript",
 						"packages": {}
 					}
 				}
 			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"changeRating\":1,\n    \"newRating\": 2,\n    \"isbn\": \"9780618260300\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:4000/books/newRating/admin",
-					"host": [
-						"localhost"
-					],
-					"port": "4000",
-					"path": [
-						"books",
-						"newRating",
-						"admin"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "{{base_url}}/books/newRating",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response status should be 200\", () => {",
-							"    pm.response.to.have.status(200);",
-							"})",
-							"",
-							"pm.test(\"Should get only one result back\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.be.an('object');",
-							"    pm.expect(jsonData.entry).to.be.an('array').and.not.empty;",
-							"    pm.expect(jsonData.entry).to.be.lengthOf(1);",
-							"});",
-							"",
-							"pm.test(\"Body should have an isbn13\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('isbn13');",
-							"    pm.expect(parseInt(entry.isbn13)).to.be.a('number');",
-							"    pm.expect(parseInt(entry.isbn13)).to.be.at.least(0);",
-							"});",
-							"",
-							"pm.test(\"Body should have a title\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('title');",
-							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
-							"",
-							"});",
-							"",
-							"pm.test(\"Body should have an Author\", function () {",
-							"    const jsonData = pm.response.json()",
-							"    pm.expect(jsonData).to.be.an('object');",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('authors');",
-							"    pm.expect(entry.authors).to.be.a('string').and.not.empty;",
-							"});",
-							"",
-							"pm.test(\"Body has publication year\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('publication_year');",
-							"    pm.expect(entry.publication_year).to.be.a('number');",
-							"});",
-							"",
-							"pm.test(\"Body has orginal title\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('original_title');",
-							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
-							"});",
-							"",
-							"pm.test(\"Body has an non negative average rating\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_avg');",
-							"    pm.expect(entry.rating_avg).to.be.a('number');",
-							"    pm.expect(entry.rating_avg).to.be.at.least(0);",
-							"});",
-							"",
-							"pm.test(\"Body has an non negative number of ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_count');",
-							"    pm.expect(entry.rating_count).to.be.a('number');",
-							"    pm.expect(entry.rating_count).to.be.at.least(0); ",
-							"});",
-							"pm.test(\"Body has an non negative 1 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_1_star');",
-							"    pm.expect(entry.rating_1_star).to.be.a('number');",
-							"    pm.expect(entry.rating_1_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 2 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_2_star');",
-							"    pm.expect(entry.rating_2_star).to.be.a('number');",
-							"    pm.expect(entry.rating_2_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 3 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_3_star');",
-							"    pm.expect(entry.rating_3_star).to.be.a('number');",
-							"    pm.expect(entry.rating_3_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 4 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_4_star');",
-							"    pm.expect(entry.rating_4_star).to.be.a('number');",
-							"    pm.expect(entry.rating_4_star).to.be.at.least(0);",
-							"});",
-							"pm.test(\"Body has an non negative 5 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var entry = jsonData.entry[0];",
-							"    pm.expect(entry).to.have.property('rating_5_star');",
-							"    pm.expect(entry.rating_5_star).to.be.a('number');",
-							"    pm.expect(entry.rating_5_star).to.be.at.least(0);",
-							"});",
-							"",
-							"",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"pm.collectionVariables.set(\"name\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));",
-							"pm.collectionVariables.set(\"msg\", pm.variables.replaceIn(\"{{$randomPhrase}}\"));"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"changeRating\":1,\n    \"isbn\": \"9780618260300\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:4000/books/newRating",
-					"host": [
-						"localhost"
-					],
-					"port": "4000",
-					"path": [
-						"books",
-						"newRating"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "{{base_url}}/books/all",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response status should be 200\", () => {",
-							"    pm.response.to.have.status(200);",
-							"})",
-							"",
-							"pm.test(\"Body should have the field entries\", () => {",
-							"    pm.expect(pm.response.text()).to.include(\"entries\");",
-							"});",
-							"",
-							"pm.test(\"Body should have an isbn13\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.be.an('object');",
-							"    pm.expect(book).to.have.property('isbn13');",
-							"    jsonData.entries.forEach(function(entry) {",
-							"        pm.expect(parseInt(entry.isbn13)).to.be.a('number');",
-							"        pm.expect(parseInt(entry.isbn13)).to.be.at.least(0);",
-							"    });",
-							"});",
-							"",
-							"pm.test(\"Body should have a title\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('title');",
-							"    jsonData.entries.forEach(function(entry) {",
-							"        pm.expect(entry).to.have.property('title');",
-							"        pm.expect(entry.title).to.be.a('string').and.not.empty;",
-							"  });",
-							"});",
-							"",
-							"pm.test(\"Body should have an Author\", function () {",
-							"    const responseData = pm.response.json()",
-							"",
-							"    pm.expect(responseData).to.be.an('object');",
-							"    pm.expect(responseData.entries).to.be.an('array').and.not.empty;",
-							"",
-							"  responseData.entries.forEach(function(entry) {",
-							"    pm.expect(entry).to.have.property('authors');",
-							"    pm.expect(entry.authors).to.be.a('string').and.not.empty;",
-							"    });",
-							"});",
-							"",
-							"pm.test(\"Body has publication year\", function () {",
-							"    const responseData = pm.response.json();",
-							"",
-							"    pm.expect(responseData).to.be.an('object');",
-							"    pm.expect(responseData.entries).to.be.an('array').and.not.empty;",
-							"",
-							"    responseData.entries.forEach(function(entry) {",
-							"    pm.expect(entry).to.have.property('publication_year');",
-							"    pm.expect(entry.publication_year).to.be.a('number');",
-							"    });",
-							"});",
-							"",
-							"pm.test(\"Body has orginal title\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('original_title');",
-							"});",
-							"pm.test(\"Body has average rating\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_avg');",
-							"});",
-							"    pm.test(\"Body has number of ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_count');",
-							"});",
-							"pm.test(\"Body has 1 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_1_star');",
-							"});",
-							"pm.test(\"Body has 2 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_2_star');",
-							"});",
-							"pm.test(\"Body has 3 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_3_star');",
-							"});",
-							"pm.test(\"Body has 4 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_4_star');",
-							"});",
-							"pm.test(\"Body has 5 star ratings\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var book = jsonData.entries[0];",
-							"    pm.expect(book).to.have.property('rating_5_star');",
-							"});",
-							"",
-							"pm.test(\"average rating is a non-negative number\", function () {",
-							"    const responseData = pm.response.json();",
-							"",
-							"    pm.expect(responseData).to.be.an('object');",
-							"    pm.expect(responseData.entries).to.be.an('array');",
-							"    ",
-							"    responseData.entries.forEach(function(entry) {",
-							"        pm.expect(entry.rating_avg).to.be.a('number');",
-							"        pm.expect(entry.rating_avg).to.be.at.least(0);",
-							"    });",
-							"});",
-							"",
-							"pm.test(\"The rating count is a non-negative number\", function () {",
-							"    const responseData = pm.response.json();",
-							"",
-							"    pm.expect(responseData).to.be.an('object');",
-							"    pm.expect(responseData.entries).to.be.an('array');",
-							"    ",
-							"    responseData.entries.forEach(function(entry) {",
-							"        pm.expect(entry.rating_count).to.be.a('number');",
-							"        pm.expect(entry.rating_count).to.be.at.least(0);",
-							"    });",
-							"});",
-							"",
-							"pm.test(\"all ratingsa are a non-negative number\", function () {",
-							"    const responseData = pm.response.json();",
-							"",
-							"    pm.expect(responseData).to.be.an('object');",
-							"    pm.expect(responseData.entries).to.be.an('array');",
-							"    ",
-							"    responseData.entries.forEach(function(entry) {",
-							"        pm.expect(entry.rating_1_star).to.be.a('number');",
-							"        pm.expect(entry.rating_1_star).to.be.at.least(0);",
-							"        pm.expect(entry.rating_2_star).to.be.a('number');",
-							"        pm.expect(entry.rating_2_star).to.be.at.least(0);",
-							"        pm.expect(entry.rating_3_star).to.be.a('number');",
-							"        pm.expect(entry.rating_3_star).to.be.at.least(0);",
-							"        pm.expect(entry.rating_4_star).to.be.a('number');",
-							"        pm.expect(entry.rating_4_star).to.be.at.least(0);",
-							"        pm.expect(entry.rating_5_star).to.be.a('number');",
-							"        pm.expect(entry.rating_5_star).to.be.at.least(0);",
-							"    });",
-							"});",
-							"",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
 				"method": "GET",
 				"header": [],
+				"url": {
+					"raw": "localhost:4000/books/publication_year?publication_year=2008",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"publication_year"
+					],
+					"query": [
+						{
+							"key": "publication_year",
+							"value": "2008"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:4000/books/addNewBook",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const book = pm.response.json();",
+							"",
+							"pm.test(\"Check new book fields\", function () {",
+							"    pm.expect(book).to.be.an('object');",
+							"    pm.expect(book.id).to.eql(10000);",
+							"    pm.expect(book.isbn13).to.eql('1');",
+							"    pm.expect(book.authors).to.eql('test');",
+							"    pm.expect(book.publication_year).to.eql(1);",
+							"    pm.expect(book.original_title).to.eql('test');",
+							"    pm.expect(book.title).to.eql('test');",
+							"    pm.expect(book.rating_avg).to.eql(1);",
+							"    pm.expect(book.rating_count).to.eql(1);",
+							"    pm.expect(book.rating_1_star).to.eql(1);",
+							"    pm.expect(book.rating_2_star).to.eql(1);",
+							"    pm.expect(book.rating_3_star).to.eql(1);",
+							"    pm.expect(book.rating_4_star).to.eql(1);",
+							"    pm.expect(book.rating_5_star).to.eql(1);",
+							"    pm.expect(book.image_url).to.eql('test');",
+							"    pm.expect(book.image_small_url).to.eql('test');",
+							"});",
+							"",
+							"",
+							"// const response = pm.response.json();",
+							"",
+							"// pm.test(\"Check that body has all the field entries\", () => {",
+							"//     pm.expect(response).to.haveOwnProperty(\"entry\");",
+							"//     pm.expect(response.entry).to.equal(",
+							"//         // { id: 100011, isbn13: \"1\", authors: \"test\", publication_year: 1, original_title: \"test\", title: \"test\", rating_avg: 1, rating_count: 1, rating_1_star: 1, rating_2_star: 1, rating_3_star: 1, rating_4_star: 1, rating_5_star: 1, image_url: \"test\", image_small_url: \"test\" }",
+							"//         {\"id\":100013,\"isbn13\":\"1\",\"authors\":\"test\",\"publication_year\":1,\"original_title\":\"test\",\"title\":\"test\",\"rating_avg\":1,\"rating_count\":1,\"rating_1_star\":1,\"rating_2_star\":1,\"rating_3_star\":1,\"rating_4_star\":1,\"rating_5_star\":1,\"image_url\":\"test\",\"image_small_url\":\"test\"}",
+							"//     );",
+							"// })"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"id\": \"10000\",\n    \"isbn13\": \"1\",\n    \"authors\": \"test\",\n    \"publication_year\": \"1\",\n    \"original_title\": \"test\",\n    \"title\":\"test\",\n    \"rating_avg\": \"1\",\n    \"rating_count\": \"1\",\n    \"rating_1_star\": \"1\",\n    \"rating_2_star\": \"1\",\n    \"rating_3_star\": \"1\",\n    \"rating_4_star\": \"1\",\n    \"rating_5_star\": \"1\",\n    \"image_url\": \"test\",\n    \"image_small_url\": \"test\"\n}\n\n// {\n//     \"isbn13\":\"{{isbn}}\",\n//     \"authors\": \"{{authors}}\",\n//     \"publication_year\":\"{{pub year}}\",\n//     \"original_title\": \"{{org title}}\",\n//     \"title\":\"{{title}}\",\n//     \"rating_avg\": \"{{rating avg}}\",\n//     \"rating_count\":\"{{ratig count}}\",\n//     \"rating_1_star\": \"{{1 star}}\",\n//     \"rating_2_star\":\"{{2 star}}\",\n//     \"rating_3_star\": \"{{3 star}}\",\n//     \"rating_4_star\":\"{{4 star}}\",\n//     \"rating_5_star\": \"{{5 star}}\",\n//     \"image_url\":\"{{url}}\",\n//     \"image_small_url\": \"{{smal url}}\"\n// }",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
+				"url": {
+					"raw": "localhost:4000/books/add_new_book",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"add_new_book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:4000/books/all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
 				"url": {
 					"raw": "localhost:4000/books/all",
 					"host": [
@@ -488,16 +194,205 @@
 				}
 			},
 			"response": []
-		}
-	],
-	"variable": [
-		{
-			"key": "name",
-			"value": ""
 		},
 		{
-			"key": "msg",
-			"value": ""
+			"name": "localhost:4000/books/add_new_book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// test for missing info (i.e. no info at all)\r",
+							"pm.test(\"Response status should be 400\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:4000/books/add_new_book",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"add_new_book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:4000/books/add_new_book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// test for duplicate id (i.e. id = 1)\r",
+							"pm.test(\"Response status should be 400\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"1\",\r\n    \"isbn13\": \"1\",\r\n    \"authors\": \"test\",\r\n    \"publication_year\": \"1\",\r\n    \"original_title\": \"test\",\r\n    \"title\":\"test\",\r\n    \"rating_avg\": \"1\",\r\n    \"rating_count\": \"1\",\r\n    \"rating_1_star\": \"1\",\r\n    \"rating_2_star\": \"1\",\r\n    \"rating_3_star\": \"1\",\r\n    \"rating_4_star\": \"1\",\r\n    \"rating_5_star\": \"1\",\r\n    \"image_url\": \"test\",\r\n    \"image_small_url\": \"test\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:4000/books/add_new_book",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"add_new_book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:4000/books/publication_year?publication_year=1813",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();\r",
+							"const book = response[0];\r",
+							"\r",
+							"pm.test(\"Check list structure\", function() {\r",
+							"\tpm.expect(book).to.be.an('object');\r",
+							"\tpm.expect(book).to.have.property('isbn13');\r",
+							"\tpm.expect(book).to.have.property('authors');\r",
+							"\tpm.expect(book).to.have.property('publication_year');\r",
+							"\tpm.expect(book).to.have.property('original_title');\r",
+							"\tpm.expect(book).to.have.property('title');\r",
+							"\tpm.expect(book).to.have.property('rating_avg');\r",
+							"\tpm.expect(book).to.have.property('rating_count');\r",
+							"\tpm.expect(book).to.have.property('rating_1_star');\r",
+							"\tpm.expect(book).to.have.property('rating_2_star');\r",
+							"\tpm.expect(book).to.have.property('rating_3_star');\r",
+							"\tpm.expect(book).to.have.property('rating_4_star');\r",
+							"\tpm.expect(book).to.have.property('rating_5_star');\r",
+							"\tpm.expect(book).to.have.property('image_url');\r",
+							"\tpm.expect(book).to.have.property('image_small_url');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check first returned book for publication year 1813\", function() {\r",
+							"    pm.expect(book.isbn13).to.eql('9780679783270');\r",
+							"\tpm.expect(book.authors).to.eql('Jane Austen');\r",
+							"\tpm.expect(book.publication_year).to.eql(1813);\r",
+							"\tpm.expect(book.original_title).to.eql('Pride and Prejudice');\r",
+							"\tpm.expect(book.title).to.eql('Pride and Prejudice');\r",
+							"\tpm.expect(book.rating_avg).to.eql(4.24);\r",
+							"\tpm.expect(book.rating_count).to.eql(2035490);\r",
+							"\tpm.expect(book.rating_1_star).to.eql(54700);\r",
+							"\tpm.expect(book.rating_2_star).to.eql(86485);\r",
+							"\tpm.expect(book.rating_3_star).to.eql(284852);\r",
+							"\tpm.expect(book.rating_4_star).to.eql(609755);\r",
+							"\tpm.expect(book.rating_5_star).to.eql(1155673);\r",
+							"\tpm.expect(book.image_url).to.eql('https://images.gr-assets.com/books/1320399351m/1885.jpg');\r",
+							"\tpm.expect(book.image_small_url).to.eql('https://images.gr-assets.com/books/1320399351s/1885.jpg');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:4000/books/publication_year?publication_year=1813",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"publication_year"
+					],
+					"query": [
+						{
+							"key": "publication_year",
+							"value": "1813"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:4000/books/publication_year?publication_year=0000",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// test for an year not in database (i.e. year = 0000)\r",
+							"pm.test(\"Response status should be 404\", () => {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:4000/books/publication_year?publication_year=0000",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"publication_year"
+					],
+					"query": [
+						{
+							"key": "publication_year",
+							"value": "0000"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

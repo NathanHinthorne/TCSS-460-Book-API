@@ -531,9 +531,11 @@ bookRouter.get(
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
-                    response.send({
-                        entries: result.rows,
-                    });
+                    const books: IBook[] = result.rows;
+                    response.send(
+                        // entries: result.rows,
+                        books
+                    );
                 } else {
                     response.status(404).send({
                         message: `No books of publication year ${request.query.publication_year} found`,
@@ -854,11 +856,11 @@ bookRouter.post(
 
         pool.query(theQuery, values)
             .then((result) => {
-                // result.rows array are the records returned from the SQL statement.
-                // An INSERT statement will return a single row, the row that was inserted.
-                response.status(201).send({
-                    entry: result.rows[0],
-                });
+                const book: IBook[] = result.rows[0];
+                response.status(201).send(
+                    // entry: result.rows[0],
+                    book
+                );
             })
             .catch((error) => {
                 if (
@@ -924,16 +926,13 @@ bookRouter.delete(
                     response.status(404).send({ message: 'No books found with the provided ISBNs.', isbns: isbns });
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
     }
 );
-
-
-
 
 // "return" the router
 export { bookRouter };
