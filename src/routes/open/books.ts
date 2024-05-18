@@ -332,24 +332,24 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
-// bookRouter.get(
-//     '/',
-//     // mwValidAuthor, //TODO add this middleware
-//     (request: Request, response: Response) => {
-//         const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
-//         const values = [request.params.author];
+bookRouter.get(
+    '/',
+    // mwValidAuthor, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
+        const values = [request.params.author];
 
-//         pool.query(theQuery, values)
-//             .then((result) => {
-//                 response.json(result.rows);
-//             })
-//             .catch((err) => {
-//                 response.status(400).send({
-//                     message: 'Error: ' + err.detail,
-//                 });
-//             });
-//     }
-// );
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: 'Error: ' + err.detail,
+                });
+            });
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
@@ -389,24 +389,24 @@ bookRouter.get(
  *
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
-// bookRouter.get(
-//     '/',
-//     // mwValidRating, //TODO add this middleware
-//     (request: Request, response: Response) => {
-//         const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
-//         const values = [request.params.rating_avg];
+bookRouter.get(
+    '/',
+    // mwValidRating, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
+        const values = [request.params.rating_avg];
 
-//         pool.query(theQuery, values)
-//             .then((result) => {
-//                 response.json(result.rows);
-//             })
-//             .catch((err) => {
-//                 response.status(400).send({
-//                     message: 'Error: ' + err.detail,
-//                 });
-//             });
-//     }
-// );
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: 'Error: ' + err.detail,
+                });
+            });
+    }
+);
 
 /**
  * @api {get} /books?title=:title Get books by title
