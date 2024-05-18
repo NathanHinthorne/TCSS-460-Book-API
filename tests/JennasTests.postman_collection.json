@@ -1,13 +1,13 @@
 {
 	"info": {
-		"_postman_id": "4f802975-ed66-450f-a284-5d6d862f3f7b",
+		"_postman_id": "3e3b5d1c-3b43-4984-9a3a-e3c3e063a079",
 		"name": "JennasTests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "34355612"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "34355037"
 	},
 	"item": [
 		{
-			"name": "{{base_url}}/books/newRatting/admin",
+			"name": "{{base_url}}/books/newRating/admin",
 			"event": [
 				{
 					"listen": "test",
@@ -126,18 +126,7 @@
 						}
 					}
 				},
-				"url": {
-					"raw": "localhost:4000/books/newRating/admin",
-					"host": [
-						"localhost"
-					],
-					"port": "4000",
-					"path": [
-						"books",
-						"newRating",
-						"admin"
-					]
-				}
+				"url": "localhost:4000/books/newRating/admin"
 			},
 			"response": []
 		},
@@ -262,7 +251,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"changeRating\": 1,\n    \"isbn\": 9780618260300\n}",
+					"raw": "{\n    \"changeRating\": 1,\n    \"isbn\": 9780618260300,\n    \"newRating\": 5\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -450,17 +439,7 @@
 						}
 					}
 				},
-				"url": {
-					"raw": "localhost:4000/books/all",
-					"host": [
-						"localhost"
-					],
-					"port": "4000",
-					"path": [
-						"books",
-						"all"
-					]
-				}
+				"url": "localhost:4000/books/all"
 			},
 			"response": []
 		}

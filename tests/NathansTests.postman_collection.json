@@ -1,13 +1,13 @@
 {
 	"info": {
 		"_postman_id": "5d505ab1-4c90-4d82-b7d5-036f12130db8",
-		"name": "TCSS460_BookAPI",
+		"name": "NathansTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "34355037"
 	},
 	"item": [
 		{
-			"name": "search by author",
+			"name": "GetByAuthor Successful",
 			"event": [
 				{
 					"listen": "test",
@@ -97,7 +97,7 @@
 			"response": []
 		},
 		{
-			"name": "search by rating",
+			"name": "GetByRating Successful",
 			"event": [
 				{
 					"listen": "test",
@@ -180,7 +180,7 @@
 			"response": []
 		},
 		{
-			"name": "delete by ISBNs",
+			"name": "DeleteISBNs Successful",
 			"event": [
 				{
 					"listen": "test",
