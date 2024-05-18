@@ -13,6 +13,12 @@ import { pool, validationFunctions } from '../../core/utilities';
 
 const bookRouter: Router = express.Router();
 
+const isStringProvided = validationFunctions.isStringProvided;
+const isNumberProvided = validationFunctions.isNumberProvided;
+
+// formatting database row
+const format = (resultRow) =>
+    `id: ${resultRow.id}, isbn13: ${resultRow.isbn13}, authors: ${resultRow.authors}, publication_year: ${resultRow.publication_year}, original_title: ${resultRow.original_title}, title: ${resultRow.title}, rating_avg: ${resultRow.rating_avg}, rating_count: ${resultRow.rating_count}, rating_1_star: ${resultRow.rating_1_star}, rating_2_star: ${resultRow.rating_2_star}, rating_3_star: ${resultRow.rating_3_star}, rating_4_star: ${resultRow.rating_4_star}, rating_5_star: ${resultRow.rating_5_star}, image_url: ${resultRow.image_url}, image_small_url: ${resultRow.image_small_url}`;
 
 function mwValidRating(
     request: Request,
@@ -101,6 +107,22 @@ function mwValidISBNQuery(
         });
     }
 }
+
+function mwValidPubYearQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (isNumberProvided(request.query.publication_year)) {
+        next();
+    } else {
+        console.error('Invalid or missing publication year');
+        response.status(400).send({
+            message:
+                'Invalid or missing publication year - please refer to documentation',
+        });
+    }
+}
 /*
 ==============================================================
 2. Middlewear functions
@@ -112,6 +134,70 @@ function mwValidISBNQuery(
         or modifying the request/response objects.
 ==============================================================
 */
+
+// function mwValidBook(
+
+// )
+
+// function mwValidAuthor(
+
+// )
+
+// function mwValidPubYear(
+//     request: Request,
+//     response: Response,
+//     next: NextFunction
+// ) {
+//     if (isNumberProvided(request.params.publication_year)) {
+//         next();
+//     } else {
+//         console.error('Invalid or missing publication year');
+//         response.status(400).send({
+//             message:
+//                 'Invalid or missing publication year - please refer to documentation',
+//         });
+//     }
+// }
+
+// function mwValidRating(
+
+// )
+
+// function mwValidIsbn(
+
+// )
+
+function mwValidBookDescriptionBody(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (
+        isNumberProvided(request.body.id) &&
+        isNumberProvided(request.body.isbn13) &&
+        isStringProvided(request.body.authors) &&
+        isNumberProvided(request.body.publication_year) &&
+        isStringProvided(request.body.original_title) &&
+        isStringProvided(request.body.title) &&
+        isNumberProvided(request.body.rating_avg) &&
+        isNumberProvided(request.body.rating_count) &&
+        isNumberProvided(request.body.rating_1_star) &&
+        isNumberProvided(request.body.rating_2_star) &&
+        isNumberProvided(request.body.rating_3_star) &&
+        isNumberProvided(request.body.rating_4_star) &&
+        isNumberProvided(request.body.rating_5_star) &&
+        isStringProvided(request.body.image_url) &&
+        isStringProvided(request.body.image_small_url)
+    ) {
+        next();
+    } else {
+        console.error('Missing required information');
+        response.status(400).send({
+            message:
+                'Missing required information - please refer to documentation',
+        });
+    }
+}
 
 /*
 ==============================================================
@@ -217,6 +303,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
             if (result.rowCount >= 1) {
                 response.send({
                     entries: result.rows,
+                    // entries: result.rows.map(format),
                 });
             } else {
                 response.status(404).send({
@@ -251,6 +338,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * @apiSuccessExample {json} Success-Response:
  * {
  *   "book": {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -291,6 +379,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -311,25 +400,24 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
-bookRouter.get(
-    '/',
-    // mwValidAuthor, //TODO add this middleware
-    (request: Request, response: Response) => {
-        const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
-        const values = [request.params.author];
+// bookRouter.get(
+//     '/',
+//     // mwValidAuthor, //TODO add this middleware
+//     (request: Request, response: Response) => {
+//         const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
+//         const values = [request.params.author];
 
-        pool.query(theQuery, values)
-            .then((result) => {
-                response.json(result.rows);
-            })
-            .catch(err => {
-                response.status(400).send({
-                    message: "Error: " + err.detail
-                });
-            });
-    
-});
-
+//         pool.query(theQuery, values)
+//             .then((result) => {
+//                 response.json(result.rows);
+//             })
+//             .catch((err) => {
+//                 response.status(400).send({
+//                     message: 'Error: ' + err.detail,
+//                 });
+//             });
+//     }
+// );
 
 /**
  * NOTE: This is a required endpoint
@@ -349,6 +437,7 @@ bookRouter.get(
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -380,13 +469,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
-});
+    }
+);
 
 /**
  * @api {get} /books?title=:title Get books by title
@@ -405,6 +494,7 @@ bookRouter.get(
  * {
  *   "bookList":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -428,7 +518,7 @@ bookRouter.get(
 
 /**
  * Publish year
- * @api {get} /books?year=:year Get books by publication year
+ * @api {get} /books?publication_year=:publication_year Get books by publication year
  *
  * @apiDescription Get books by a given publication year
  *
@@ -437,13 +527,14 @@ bookRouter.get(
  *
  * @apiQuery {Number} publication_year The year the book was published
  *
- * @apiSuccess {Object[]} bookList The list of books with the given publication year
+ * @apiSuccess {Object[]} entries The list of books with the given publication year
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
  * {
- *   "bookList":  [
+ *   "entries":  [
  *     {
+ *       "id": "14",
  *       "isbn13": "9780451526342",
  *       "authors": "George Orwell",
  *       "publication_year": "1945",
@@ -462,8 +553,38 @@ bookRouter.get(
  *   ]
  * }
  *
- * @apiError (400: Bad Request) {String} message The provided publication year is not valid or supported
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (404: Not Found) {String} message No books of publication year ${request.query.publication_year} found
  */
+bookRouter.get(
+    '/publication_year/',
+    mwValidPubYearQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.query.publication_year];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entries: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: `No books of publication year ${request.query.publication_year} found`,
+                    });
+                }
+            })
+            .catch((error) => {
+                // log error
+                console.error('DB Query error on GET by publication year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 // ---------------- PUT ----------------
 
@@ -738,7 +859,7 @@ bookRouter.put(
  * NOTE: Required endpoint
  * NOTE: This endpoint should allow null values for fields that are not required
  *
- * @api {post} /books Add a new book
+ * @api {post} /books/add_new_book/ Add a new book
  *
  * @apiDescription Add a new book to the database
  *
@@ -750,6 +871,7 @@ bookRouter.put(
  *
  * @apiParamExample {json} Request-Example:
  * {
+ *   "id": "14",
  *   "isbn13": "9780451526342",
  *   "authors": "George Orwell",
  *   "publication_year": "1945",
@@ -766,11 +888,64 @@ bookRouter.put(
  *   "image_small_url": "http://example.com/small_image.jpg"
  * }
  *
- * @apiSuccess {Object} book The book that was added
+ * @apiSuccess {Object} entry The book that was added
  * @apiUse BookSuccess
  *
- * @apiError (400: Bad Request) {String} message The provided book data is not valid
+ * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
+ * @apiError (400: id Not Unique) {String} message id already exists
  */
+bookRouter.post(
+    '/add_new_book/',
+    mwValidBookDescriptionBody,
+    (request: Request, response: Response) => {
+        const theQuery =
+            'INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+        const values = [
+            request.body.id,
+            request.body.isbn13,
+            request.body.authors,
+            request.body.publication_year,
+            request.body.original_title,
+            request.body.title,
+            request.body.rating_avg,
+            request.body.rating_count,
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+            request.body.image_url,
+            request.body.image_small_url,
+        ];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                // result.rows array are the records returned from the SQL statement.
+                // An INSERT statement will return a single row, the row that was inserted.
+                response.status(201).send({
+                    entry: result.rows[0],
+                });
+            })
+            .catch((error) => {
+                if (
+                    error.detail != undefined &&
+                    (error.detail as string).endsWith('already exists.')
+                ) {
+                    console.error('id already exists');
+                    response.status(400).send({
+                        message: 'id already exists',
+                    });
+                } else {
+                    //log the error
+                    console.error('DB Query error on POST');
+                    console.error(error);
+                    response.status(500).send({
+                        message: 'server error - contact support',
+                    });
+                }
+            });
+    }
+);
 
 // ---------------- DELETE ----------------
 
@@ -812,4 +987,3 @@ bookRouter.delete(
 
 // "return" the router
 export { bookRouter };
-
