@@ -8,6 +8,7 @@
 
 //express is the framework we're going to use to handle requests
 import express, { NextFunction, Request, Response, Router } from 'express';
+
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
 
@@ -22,6 +23,19 @@ const isNumberProvided = validationFunctions.isNumberProvided;
 // formatting database row
 const format = (resultRow) =>
     `id: ${resultRow.id}, isbn13: ${resultRow.isbn13}, authors: ${resultRow.authors}, publication_year: ${resultRow.publication_year}, original_title: ${resultRow.original_title}, title: ${resultRow.title}, rating_avg: ${resultRow.rating_avg}, rating_count: ${resultRow.rating_count}, rating_1_star: ${resultRow.rating_1_star}, rating_2_star: ${resultRow.rating_2_star}, rating_3_star: ${resultRow.rating_3_star}, rating_4_star: ${resultRow.rating_4_star}, rating_5_star: ${resultRow.rating_5_star}, image_url: ${resultRow.image_url}, image_small_url: ${resultRow.image_small_url}`;
+
+
+/*
+==============================================================
+2. Middlewear functions
+    a. These are functions that have access to 
+        the request object (req), the response object (res), 
+        and the next middleware function in the application’s 
+        request-response cycle. 
+    b. They can perform tasks like input validation, logging, 
+        or modifying the request/response objects.
+==============================================================
+*/
 
 function mwValidRating(
     request: Request,
@@ -111,6 +125,7 @@ function mwValidISBNQuery(
     }
 }
 
+
 function mwValidPubYearQuery(
     request: Request,
     response: Response,
@@ -126,49 +141,8 @@ function mwValidPubYearQuery(
         });
     }
 }
-/*
-==============================================================
-2. Middlewear functions
-    a. These are functions that have access to 
-        the request object (req), the response object (res), 
-        and the next middleware function in the application’s 
-        request-response cycle. 
-    b. They can perform tasks like input validation, logging, 
-        or modifying the request/response objects.
-==============================================================
-*/
 
-// function mwValidBook(
 
-// )
-
-// function mwValidAuthor(
-
-// )
-
-// function mwValidPubYear(
-//     request: Request,
-//     response: Response,
-//     next: NextFunction
-// ) {
-//     if (isNumberProvided(request.params.publication_year)) {
-//         next();
-//     } else {
-//         console.error('Invalid or missing publication year');
-//         response.status(400).send({
-//             message:
-//                 'Invalid or missing publication year - please refer to documentation',
-//         });
-//     }
-// }
-
-// function mwValidRating(
-
-// )
-
-// function mwValidIsbn(
-
-// )
 
 function mwValidBookDescriptionBody(
     request: Request,
@@ -268,33 +242,28 @@ function mwValidBookDescriptionBody(
  * @apiName GetAllBooks
  * @apiGroup User
  *
- * @apiSuccess {Object[]} bookList The list of books in the database
+ * @apiSuccess {Object[]}  The list of books in the database
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- *    "entry": [
- *        {
- *            "id": 7,
- *            "isbn13": "9780618260300",
- *            "authors": "J.R.R. Tolkien",
- *            "publication_year": 1937,
- *            "original_title": "The Hobbit or There and Back Again",
- *            "title": "The Hobbit",
- *            "rating_avg": 3.56,
- *            "rating_count": 36,
- *            "rating_1_star": 4,
- *            "rating_2_star": 2,
- *            "rating_3_star": 10,
- *            "rating_4_star": 10,
- *            "rating_5_star": 10,
- *            "image_url": "https://images.gr-assets.com/books/1372847500m/5907.jpg",
- *            "image_small_url": "https://images.gr-assets.com/books/1372847500s/5907.jpg"
- *        },
- *        {
- *            "id": 8,
- *            ... ect.
- *    ]
- *}
+ *   [
+ *     {
+ *       "isbn13": "9780451526342",
+ *       "authors": "George Orwell",
+ *       "publication_year": "1945",
+ *       "original_title": "Animal Farm",
+ *       "title": "Animal Farm",
+ *       "rating_avg": "3.9",
+ *       "rating_count": "2000",
+ *       "rating_1_star": "100",
+ *       "rating_2_star": "200",
+ *       "rating_3_star": "500",
+ *       "rating_4_star": "700",
+ *       "rating_5_star": "500",
+ *       "image_url": "http://example.com/image.jpg",
+ *       "image_small_url": "http://example.com/small_image.jpg"
+ *     }
+ *   ]
  *
  * @apiError (404: Books Not Found) {String} message No books were found in the database
  */
@@ -326,7 +295,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books/:isbn Get book by ISBN
+ * @api {get} /books/isbn/:isbn Get book by ISBN
  *
  * @apiDescription Get a specific book by ISBN
  *
@@ -365,7 +334,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books?author=:author Get books by author
+ * @api {get} /books/author?author=:author Get books by author
  *
  * @apiDescription Get books by a given author
  *
@@ -374,13 +343,12 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiQuery {String} author The author's full name
  *
- * @apiSuccess {Object[]} bookList The list of books by the given author
+ * @apiSuccess {Object[]} The list of books by the given author
  * @apiUse BookSuccess
  *
  * @apiSuccess {String} titles List of book titles by given author
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "id": "14",
  *       "isbn13": "9780451526342",
@@ -399,32 +367,31 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided author is not valid or supported
  */
-// bookRouter.get(
-//     '/',
-//     // mwValidAuthor, //TODO add this middleware
-//     (request: Request, response: Response) => {
-//         const theQuery = `SELECT * FROM books WHERE authors = $1`; //TODO modify so it's checking for a substring (because )
-//         const values = [request.params.author];
+bookRouter.get(
+    '/author/',
+    // mwValidAuthorQuery, 
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE authors ILIKE $1`;
+        const values = [`%${request.query.author}%`];
 
-//         pool.query(theQuery, values)
-//             .then((result) => {
-//                 response.json(result.rows);
-//             })
-//             .catch((err) => {
-//                 response.status(400).send({
-//                     message: 'Error: ' + err.detail,
-//                 });
-//             });
-//     }
-// );
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+    
+});
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books?rating=:rating Get books by rating
+ * @api {get} /books/rating?rating=:rating Get books by rating
  *
  * @apiDescription Get all books at a given rating or above
  *
@@ -433,12 +400,11 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiQuery {Number} rating_avg The rating the books need to be at or above
  *
- * @apiSuccess {Object[]} bookList The list of books with the given rating or above
+ * @apiSuccess {Object[]} The list of books with the given rating or above
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "id": "14",
  *       "isbn13": "9780451526342",
@@ -457,16 +423,15 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided rating is not valid or supported
  */
 bookRouter.get(
-    '/',
-    // mwValidRating, //TODO add this middleware
+    '/rating/',
+    // mwValidRating,
     (request: Request, response: Response) => {
         const theQuery = `SELECT * FROM books WHERE rating_avg >= $1`;
-        const values = [request.params.rating_avg];
+        const values = [request.query.rating];
 
         pool.query(theQuery, values)
             .then((result) => {
@@ -477,11 +442,11 @@ bookRouter.get(
                     message: 'Error: ' + err.detail,
                 });
             });
-    }
-);
+    });
+
 
 /**
- * @api {get} /books?title=:title Get books by title
+ * @api {get} /books/title?title=:title Get books by title
  *
  * @apiDescription Get books by a given title
  *
@@ -490,12 +455,11 @@ bookRouter.get(
  *
  * @apiQuery {String} title The title of the book
  *
- * @apiSuccess {Object[]} bookList The list of books with the given title
+ * @apiSuccess {Object[]} The list of books with the given title
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
+ *   [
  *     {
  *       "id": "14",
  *       "isbn13": "9780451526342",
@@ -514,14 +478,13 @@ bookRouter.get(
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message The provided title is not valid or supported
  */
 
 /**
  * Publish year
- * @api {get} /books?publication_year=:publication_year Get books by publication year
+ * @api {get} /books/publication_year?publication_year=:publication_year Get books by publication year
  *
  * @apiDescription Get books by a given publication year
  *
@@ -530,12 +493,12 @@ bookRouter.get(
  *
  * @apiQuery {Number} publication_year The year the book was published
  *
- * @apiSuccess {Object[]} entries The list of books with the given publication year
+
+ * @apiSuccess {Object[]} The list of books with the given publication year
  * @apiUse BookSuccess
  *
- * @apiSuccessExample {json} Success-Response:
- * {
- *   "entries":  [
+ * @apiSuccessExample {json} Success-Response:\
+ *   [
  *     {
  *       "id": "14",
  *       "isbn13": "9780451526342",
@@ -554,7 +517,6 @@ bookRouter.get(
  *       "image_small_url": "http://example.com/small_image.jpg"
  *     }
  *   ]
- * }
  *
  * @apiError (400: Bad Request) {String} message Missing required information - please refer to the documentation
  * @apiError (404: Not Found) {String} message No books of publication year ${request.query.publication_year} found
@@ -594,7 +556,7 @@ bookRouter.get(
 // ---------------- PUT ----------------
 
 /**
- * @api {put} /books/:isbn Update book fields by ISBN
+ * @api {put} /books/isbn/:isbn Update book fields by ISBN
  *
  * @apiDescription Update specific fields of a book identified by its ISBN
  *
@@ -721,7 +683,7 @@ bookRouter.put(
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
  * NOTE: An admin is allowed to adjust the ratings without a limit.
  *
- * @api {put} /books/:isbn/rating/:rating Update book rating
+ * @api {put} /books/:isbn/newRating/:rating Update book rating
  *
  * @apiDescription Update the ratings of a book. The rating type should be between 1 and 5.
  *
@@ -826,37 +788,6 @@ bookRouter.put(
     }
 );
 
-// I haven't finished these two endpoints yet. -Nathan
-/*
- * Other endpoints to potentially add later:
- * Put:
- * Title
- * @api {put} /title
- * 
- * @apiDescription Update the title of a book
- * 
- * @apiName UpdateTitle
- * @apiGroup Admin
- * 
- * @apiSuccess {String} title The books title
- * @apiSuccessExample Success-Response:
-    { "title":  "Animal Farm" }
- */
-/*
- * Author
- * @api {put} /author
- *
- * @apiDescription Update the author of a book
- *
- * @apiName UpdateAuthor6
- * @apiGroup Admin
- *
- * @apiQuery {String} title The title of the book to be updated
- *
- * @apiSuccess {String} title
- * @apiSuccessExample {json} Success-Response:
- *   { "titles":  "..." }
- */
 
 // ---------------- POST ----------------
 
@@ -957,7 +888,7 @@ bookRouter.post(
 /**
  * NOTE: Required endpoint
  * ISBNs 1 or more (required)
- * @api {delete} /isbn Delete books by ISBN
+ * @api {delete} /books/isbn Delete book by ISBN
  *
  * @apiDescription Delete one or more books by ISBN
  *
@@ -966,20 +897,34 @@ bookRouter.post(
  *
  * @apiBody {String[]} isbns array of ISBNs. Can be 1 or more
  *
+ * @apiSuccess {String} message The number of books deleted
  * @apiSuccess {String[]} isbns The ISBNs of the books that were deleted
- *
- * @apiError (400: Bad Request) {String} message At least one of the provided ISBNs is not valid
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *   "message": "2 book(s) deleted successfully.",
+ *   "isbns": [
+ *       "9780375700451",
+ *       "9780375700452"
+ *   ]
+ * }
+ * 
+ * @apiError (400: Bad Request) {String} message An error occurred during query execution
+ * @apiError (404: Not Found) {String} message No books found with the provided ISBNs
  */
 bookRouter.delete(
     '/isbn',
-    // mwValidISBN, //TODO add this middleware
     (request: Request, response: Response) => {
-        const theQuery = `DELETE FROM books WHERE isbn13 = $1`;
-        const values = [request.body.isbns];
+        const isbns = request.body.isbns;
+        const placeholders = isbns.map((_, i) => `$${i + 1}`).join(','); // $1, $2, $3, etc.
+        const theQuery = `DELETE FROM books WHERE isbn13 IN (${placeholders});`;
 
-        pool.query(theQuery, values)
+        pool.query(theQuery, isbns)
             .then((result) => {
-                response.json(result.rows);
+                if (result.rowCount > 0) {
+                    response.send({ message: `${result.rowCount} book(s) deleted successfully.`, isbns: isbns });
+                } else {
+                    response.status(404).send({ message: 'No books found with the provided ISBNs.', isbns: isbns });
+                }
             })
             .catch((err) => {
                 response.status(400).send({
