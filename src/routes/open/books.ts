@@ -269,27 +269,29 @@ function mwValidBookDescriptionBody(
  * @apiUse BookSuccess
  *
  * @apiSuccessExample {json} Success-Response:
- * {
- *   "bookList":  [
- *     {
- *       "id": "14"
- *       "isbn13": "9780451526342",
- *       "authors": "George Orwell",
- *       "publication_year": "1945",
- *       "original_title": "Animal Farm",
- *       "title": "Animal Farm",
- *       "rating_avg": "3.9",
- *       "rating_count": "2000",
- *       "rating_1_star": "100",
- *       "rating_2_star": "200",
- *       "rating_3_star": "500",
- *       "rating_4_star": "700",
- *       "rating_5_star": "500",
- *       "image_url": "http://example.com/image.jpg",
- *       "image_small_url": "http://example.com/small_image.jpg"
- *     }
- *   ]
- * }
+ *    "entry": [
+ *        {
+ *            "id": 7,
+ *            "isbn13": "9780618260300",
+ *            "authors": "J.R.R. Tolkien",
+ *            "publication_year": 1937,
+ *            "original_title": "The Hobbit or There and Back Again",
+ *            "title": "The Hobbit",
+ *            "rating_avg": 3.56,
+ *            "rating_count": 36,
+ *            "rating_1_star": 4,
+ *            "rating_2_star": 2,
+ *            "rating_3_star": 10,
+ *            "rating_4_star": 10,
+ *            "rating_5_star": 10,
+ *            "image_url": "https://images.gr-assets.com/books/1372847500m/5907.jpg",
+ *            "image_small_url": "https://images.gr-assets.com/books/1372847500s/5907.jpg"
+ *        },
+ *        {
+ *            "id": 8,
+ *            ... ect.
+ *    ]
+ *}
  *
  * @apiError (404: Books Not Found) {String} message No books were found in the database
  */
@@ -305,7 +307,7 @@ bookRouter.get('/all', (request: Request, response: Response) => {
                 });
             } else {
                 response.status(404).send({
-                    message: 'Books not found',
+                    message: 'No books were found in the database',
                 });
             }
         })
@@ -617,10 +619,33 @@ bookRouter.get(
  * @apiName IncrementRating
  * @apiGroup User
  *
- * @apiParam {Number} isbn The ISBN of the book to be updated
- * @apiParam {Number} rating The rating type to be updated (1-5)
+ * @apiBody {Number} chageRating The rating type to be updated by one vote (1-5)
+ * @apiBody {Number} isbn The ISBN of the book to be updated
  *
- * @apiSuccess {Object} book The updated book
+ * @apiSuccess {Object} The rating count, average and rating values are all updated
+ *                      for the spefifed book
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *    "entry": [
+ *        {
+ *            "id": 7,
+ *            "isbn13": "9780618260300",
+ *            "authors": "J.R.R. Tolkien",
+ *            "publication_year": 1937,
+ *            "original_title": "The Hobbit or There and Back Again",
+ *            "title": "The Hobbit",
+ *            "rating_avg": 3.56,
+ *            "rating_count": 36,
+ *            "rating_1_star": 4,
+ *            "rating_2_star": 2,
+ *            "rating_3_star": 10,
+ *            "rating_4_star": 10,
+ *            "rating_5_star": 10,
+ *            "image_url": "https://images.gr-assets.com/books/1372847500m/5907.jpg",
+ *            "image_small_url": "https://images.gr-assets.com/books/1372847500s/5907.jpg"
+ *        }
+ *    ]
+ *}
  * @apiUse BookSuccess
  *
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
@@ -662,7 +687,7 @@ bookRouter.put(
                             rating_5_star * 5 +
                             request.body.changeRating) /
                         total
-                    ).toFixed(6);
+                    ).toFixed(2);
                     const updateQueryRating = `UPDATE BOOKS SET ${rate} = ${newRating} + 1, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
                     return pool.query(updateQueryRating, values);
                 } else {
@@ -673,23 +698,7 @@ bookRouter.put(
             })
             .then((result) => {
                 response.send({
-                    entry:
-                        'Updated: ' +
-                        result.rows[0].title +
-                        ' ratings: 1 star -> ' +
-                        result.rows[0].rating_1_star +
-                        '  2 star -> ' +
-                        result.rows[0].rating_2_star +
-                        ' 3 star -> ' +
-                        result.rows[0].rating_3_star +
-                        ' 4 star -> ' +
-                        result.rows[0].rating_4_star +
-                        ' 5 star -> ' +
-                        result.rows[0].rating_5_star +
-                        ' total: ' +
-                        result.rows[0].rating_count +
-                        ' AVERAGE: ' +
-                        result.rows[0].rating_avg,
+                    entry: result.rows,
                 });
             })
             .catch((error) => {
@@ -714,12 +723,33 @@ bookRouter.put(
  * @apiName UpdateRating
  * @apiGroup Admin
  *
- * @apiParam {Number} isbn The ISBN of the book to be updated
- * @apiParam {Number} rating The rating type to be updated (1-5)
- *
- * @apiBody {Number} count The new count for the specified rating
+ * @apiBody {Number} chageRating The rating type to be updated (1-5)
+ * @apiBody {Number} newRating The new count for the specified rating type
+ * @apiBody {Number} isbn The ISBN of the book to be updated
  *
  * @apiSuccess {Object} book The updated book
+ * @apiSuccessExample {json} Success-Response:
+ *{
+ *"entry": [
+ *        {
+ *            "id": 7,
+ *            "isbn13": "9780618260300",
+ *            "authors": "J.R.R. Tolkien",
+ *            "publication_year": 1937,
+ *            "original_title": "The Hobbit or There and Back Again",
+ *            "title": "The Hobbit",
+ *            "rating_avg": 3.88,
+ *            "rating_count": 32,
+ *            "rating_1_star": 0,
+ *            "rating_2_star": 2,
+ *            "rating_3_star": 10,
+ *            "rating_4_star": 10,
+ *            "rating_5_star": 10,
+ *            "image_url": "https://images.gr-assets.com/books/1372847500m/5907.jpg",
+ *            "image_small_url": "https://images.gr-assets.com/books/1372847500s/5907.jpg"
+ *        }
+ *    ]
+ *}
  * @apiUse BookSuccess
  *
  * @apiError (400: Bad Request) {String} message The provided ISBN, rating, or count are not valid
@@ -765,7 +795,7 @@ bookRouter.put(
                             request.body.newRating *
                                 request.body.changeRating) /
                         total
-                    ).toFixed(6);
+                    ).toFixed(2);
                     const values2 = [request.body.isbn, request.body.newRating];
                     const updateQueryRating = `UPDATE BOOKS SET ${rate} = $2, rating_count = ${total}, rating_avg = ${newAverage} WHERE isbn13 = $1 RETURNING *`;
                     return pool.query(updateQueryRating, values2);
@@ -777,23 +807,7 @@ bookRouter.put(
             })
             .then((result) => {
                 response.send({
-                    entry:
-                        'Updated: ' +
-                        result.rows[0].title +
-                        ' ratings: 1 star -> ' +
-                        result.rows[0].rating_1_star +
-                        '  2 star -> ' +
-                        result.rows[0].rating_2_star +
-                        ' 3 star -> ' +
-                        result.rows[0].rating_3_star +
-                        ' 4 star -> ' +
-                        result.rows[0].rating_4_star +
-                        ' 5 star -> ' +
-                        result.rows[0].rating_5_star +
-                        ' total: ' +
-                        result.rows[0].rating_count +
-                        ' AVERAGE: ' +
-                        result.rows[0].rating_avg,
+                    entry: result.rows,
                 });
             })
             .catch((error) => {
@@ -951,4 +965,25 @@ bookRouter.post(
  *
  * @apiError (400: Bad Request) {String} message At least one of the provided ISBNs is not valid
  */
+bookRouter.delete(
+    '/isbn',
+    // mwValidISBN, //TODO add this middleware
+    (request: Request, response: Response) => {
+        const theQuery = `DELETE FROM books WHERE isbn13 = $1`;
+        const values = [request.body.isbns];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                response.json(result.rows);
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "Error: " + err.detail
+                });
+            });
+});
+
+
+
+// "return" the router
 export { bookRouter };
