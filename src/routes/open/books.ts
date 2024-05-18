@@ -11,6 +11,9 @@ import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
 
+// Import the interfaces for typechecking
+import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
+
 const bookRouter: Router = express.Router();
 
 function mwValidRating(
