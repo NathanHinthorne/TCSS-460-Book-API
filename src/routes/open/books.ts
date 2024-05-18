@@ -17,6 +17,7 @@ import { IBook, IRatings, IUrlIcon } from '../../core/models/books';
 
 const bookRouter: Router = express.Router();
 
+
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
@@ -80,14 +81,13 @@ function mwValidTitleQuery(
     response: Response,
     next: NextFunction
 ) {
-    //const priority: string = request.query.title as string;
-    if (validationFunctions.isStringProvided(request.body.title)) {
+    if (validationFunctions.isStringProvided(request.query.title)) {
         next();
     } else {
         console.error('Invalid or missing Book Title');
         response.status(400).send({
             message:
-                'Invalid or missing  Book Title - please refer to documentation',
+                'Invalid or missing Book Title - please refer to documentation',
         });
     }
 }
@@ -115,7 +115,7 @@ function mwValidISBNQuery(
     next: NextFunction
 ) {
     //const isbn: string = request.query.isbn13 as string;
-    if (validationFunctions.isNumberProvided(request.body.isbn)) {
+    if (validationFunctions.isNumberProvided(request.query.isbn)) {
         next();
     } else {
         console.error('Invalid or missing ISBN');
@@ -141,7 +141,6 @@ function mwValidPubYearQuery(
         });
     }
 }
-
 
 
 function mwValidBookDescriptionBody(
@@ -273,10 +272,9 @@ bookRouter.get('/all', (request: Request, response: Response) => {
     pool.query(theQuery)
         .then((result) => {
             if (result.rowCount >= 1) {
-                response.send({
-                    entries: result.rows,
-                    // entries: result.rows.map(format),
-                });
+                const books: IBook[] = result.rows;
+                response.json(books);
+
             } else {
                 response.status(404).send({
                     message: 'No books were found in the database',
@@ -331,6 +329,32 @@ bookRouter.get('/all', (request: Request, response: Response) => {
  *
  * @apiError (400: Bad Request) {String} message The requested ISBN is not valid
  */
+bookRouter.get(
+    '/isbn/',
+    mwValidISBNQuery,
+    (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM BOOKS WHERE isbn13 = $1';
+        const values = [request.query.isbn];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount >= 1) {
+                    response.json(result.rows[0]);
+                } else {
+                    response.status(404).send({
+                        message: 'Book not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('DB Query error on GET by ISBN');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
@@ -381,13 +405,13 @@ bookRouter.get(
             .then((result) => {
                 response.json(result.rows);
             })
-            .catch(err => {
+            .catch((err) => {
                 response.status(400).send({
-                    message: "Error: " + err.detail
+                    message: 'Error: ' + err.detail,
                 });
             });
-    
-});
+    }
+);
 
 /**
  * NOTE: This is a required endpoint
@@ -482,6 +506,33 @@ bookRouter.get(
  * @apiError (400: Bad Request) {String} message The provided title is not valid or supported
  */
 
+bookRouter.get(
+    '/title/',
+    mwValidTitleQuery,
+    (request: Request, response: Response) => {
+        const theQuery = `SELECT * FROM books WHERE title ILIKE $1`;
+        const values = [`%${request.query.title}%`];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount >= 1) {
+                    response.json(result.rows);
+                } else {
+                    response.status(404).send({
+                        message: 'Books not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('DB Query error on GET by title');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
+
 /**
  * Publish year
  * @api {get} /books/publication_year?publication_year=:publication_year Get books by publication year
@@ -574,6 +625,49 @@ bookRouter.get(
  * @apiError (404: Not Found) {String} message The book with the provided ISBN was not found
  */
 
+bookRouter.put(
+    '/isbn',
+    mwValidISBNQuery,
+    async (request: Request, response: Response) => {
+        const { isbn } = request.query;
+        const updates = request.body;
+
+        // Check if updates object is empty
+        if (Object.keys(updates).length === 0) {
+            return response.status(400).send({
+                message: 'No fields provided for update',
+            });
+        }
+
+        // Generate dynamic query parts for the fields to update
+        const setClause = Object.keys(updates)
+            .map((key, index) => `${key} = $${index + 2}`)
+            .join(', ');
+
+        const values = [isbn, ...Object.values(updates)];
+
+        const theQuery = `UPDATE books SET ${setClause} WHERE isbn13 = $1 RETURNING *`;
+
+        try {
+            const result = await pool.query(theQuery, values);
+
+            if (result.rowCount >= 1) {
+                response.json(result.rows[0]);
+            } else {
+                response.status(404).send({
+                    message: 'Book not found',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on PUT');
+            console.error(error);
+            response.status(500).send({
+                message: 'Server error - contact support',
+            });
+        }
+    }
+);
+
 /**
  * NOTE: In the back end, update the average rating and rating count since the rating has changed
  * NOTE: Since a user can only rate a book once, the rating count should only ever increase by 1.
@@ -664,9 +758,8 @@ bookRouter.put(
                 }
             })
             .then((result) => {
-                response.send({
-                    entry: result.rows,
-                });
+                const books: IRatings[] = result.rows;
+                response.json(books);
             })
             .catch((error) => {
                 //log the error
@@ -773,9 +866,8 @@ bookRouter.put(
                 }
             })
             .then((result) => {
-                response.send({
-                    entry: result.rows,
-                });
+                const books: IRatings[] = result.rows;
+                response.json(books);
             })
             .catch((error) => {
                 //log the error
@@ -933,6 +1025,7 @@ bookRouter.delete(
             });
     }
 );
+
 
 // "return" the router
 export { bookRouter };

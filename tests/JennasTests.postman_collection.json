@@ -1,0 +1,503 @@
+{
+	"info": {
+		"_postman_id": "4f802975-ed66-450f-a284-5d6d862f3f7b",
+		"name": "JennasTests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34355612"
+	},
+	"item": [
+		{
+			"name": "{{base_url}}/books/newRatting/admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status should be 200\", () => {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Should get only one result back\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"    pm.expect(jsonData.entry).to.be.an('array').and.not.empty;",
+							"    pm.expect(jsonData.entry).to.be.lengthOf(1);",
+							"});",
+							"",
+							"pm.test(\"Body should have an isbn13\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('isbn13');",
+							"    pm.expect(parseInt(entry.isbn13)).to.be.a('number');",
+							"    pm.expect(parseInt(entry.isbn13)).to.be.at.least(0);",
+							"});",
+							"",
+							"pm.test(\"Body should have a title\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('title');",
+							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
+							"",
+							"});",
+							"",
+							"pm.test(\"Body should have an Author\", function () {",
+							"    const jsonData = pm.response.json()",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('authors');",
+							"    pm.expect(entry.authors).to.be.a('string').and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Body has publication year\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('publication_year');",
+							"    pm.expect(entry.publication_year).to.be.a('number');",
+							"});",
+							"",
+							"pm.test(\"Body has orginal title\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('original_title');",
+							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Body has an non negative average rating\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_avg');",
+							"    pm.expect(entry.rating_avg).to.be.a('number');",
+							"    pm.expect(entry.rating_avg).to.be.at.least(0);",
+							"});",
+							"",
+							"pm.test(\"Body has an non negative number of ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_count');",
+							"    pm.expect(entry.rating_count).to.be.a('number');",
+							"    pm.expect(entry.rating_count).to.be.at.least(0); ",
+							"});",
+							"pm.test(\"Body has an non negative 1 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_1_star');",
+							"    pm.expect(entry.rating_1_star).to.be.a('number');",
+							"    pm.expect(entry.rating_1_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 2 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_2_star');",
+							"    pm.expect(entry.rating_2_star).to.be.a('number');",
+							"    pm.expect(entry.rating_2_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 3 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_3_star');",
+							"    pm.expect(entry.rating_3_star).to.be.a('number');",
+							"    pm.expect(entry.rating_3_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 4 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_4_star');",
+							"    pm.expect(entry.rating_4_star).to.be.a('number');",
+							"    pm.expect(entry.rating_4_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 5 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_5_star');",
+							"    pm.expect(entry.rating_5_star).to.be.a('number');",
+							"    pm.expect(entry.rating_5_star).to.be.at.least(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"name\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));",
+							"pm.collectionVariables.set(\"msg\", pm.variables.replaceIn(\"{{$randomPhrase}}\"));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"changeRating\":1,\n    \"newRating\": 2,\n    \"isbn\": \"9780618260300\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:4000/books/newRating/admin",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"newRating",
+						"admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{base_url}}/books/newRating",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status should be 200\", () => {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Should get only one result back\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"    pm.expect(jsonData.entry).to.be.an('array').and.not.empty;",
+							"    pm.expect(jsonData.entry).to.be.lengthOf(1);",
+							"});",
+							"",
+							"pm.test(\"Body should have an isbn13\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('isbn13');",
+							"    pm.expect(parseInt(entry.isbn13)).to.be.a('number');",
+							"    pm.expect(parseInt(entry.isbn13)).to.be.at.least(0);",
+							"});",
+							"",
+							"pm.test(\"Body should have a title\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('title');",
+							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
+							"",
+							"});",
+							"",
+							"pm.test(\"Body should have an Author\", function () {",
+							"    const jsonData = pm.response.json()",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('authors');",
+							"    pm.expect(entry.authors).to.be.a('string').and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Body has publication year\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('publication_year');",
+							"    pm.expect(entry.publication_year).to.be.a('number');",
+							"});",
+							"",
+							"pm.test(\"Body has orginal title\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('original_title');",
+							"    pm.expect(entry.title).to.be.a('string').and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Body has an non negative average rating\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_avg');",
+							"    pm.expect(entry.rating_avg).to.be.a('number');",
+							"    pm.expect(entry.rating_avg).to.be.at.least(0);",
+							"});",
+							"",
+							"pm.test(\"Body has an non negative number of ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_count');",
+							"    pm.expect(entry.rating_count).to.be.a('number');",
+							"    pm.expect(entry.rating_count).to.be.at.least(0); ",
+							"});",
+							"pm.test(\"Body has an non negative 1 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_1_star');",
+							"    pm.expect(entry.rating_1_star).to.be.a('number');",
+							"    pm.expect(entry.rating_1_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 2 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_2_star');",
+							"    pm.expect(entry.rating_2_star).to.be.a('number');",
+							"    pm.expect(entry.rating_2_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 3 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_3_star');",
+							"    pm.expect(entry.rating_3_star).to.be.a('number');",
+							"    pm.expect(entry.rating_3_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 4 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_4_star');",
+							"    pm.expect(entry.rating_4_star).to.be.a('number');",
+							"    pm.expect(entry.rating_4_star).to.be.at.least(0);",
+							"});",
+							"pm.test(\"Body has an non negative 5 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var entry = jsonData.entry[0];",
+							"    pm.expect(entry).to.have.property('rating_5_star');",
+							"    pm.expect(entry.rating_5_star).to.be.a('number');",
+							"    pm.expect(entry.rating_5_star).to.be.at.least(0);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"name\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));",
+							"pm.collectionVariables.set(\"msg\", pm.variables.replaceIn(\"{{$randomPhrase}}\"));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"changeRating\":1,\n    \"isbn\": \"9780618260300\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:4000/books/newRating",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"newRating"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{base_url}}/books/all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status should be 200\", () => {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Body should have the field entries\", () => {",
+							"    pm.expect(pm.response.text()).to.include(\"entries\");",
+							"});",
+							"",
+							"pm.test(\"Body should have an isbn13\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.be.an('object');",
+							"    pm.expect(book).to.have.property('isbn13');",
+							"    jsonData.entries.forEach(function(entry) {",
+							"        pm.expect(parseInt(entry.isbn13)).to.be.a('number');",
+							"        pm.expect(parseInt(entry.isbn13)).to.be.at.least(0);",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Body should have a title\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('title');",
+							"    jsonData.entries.forEach(function(entry) {",
+							"        pm.expect(entry).to.have.property('title');",
+							"        pm.expect(entry.title).to.be.a('string').and.not.empty;",
+							"  });",
+							"});",
+							"",
+							"pm.test(\"Body should have an Author\", function () {",
+							"    const responseData = pm.response.json()",
+							"",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.entries).to.be.an('array').and.not.empty;",
+							"",
+							"  responseData.entries.forEach(function(entry) {",
+							"    pm.expect(entry).to.have.property('authors');",
+							"    pm.expect(entry.authors).to.be.a('string').and.not.empty;",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Body has publication year\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.entries).to.be.an('array').and.not.empty;",
+							"",
+							"    responseData.entries.forEach(function(entry) {",
+							"    pm.expect(entry).to.have.property('publication_year');",
+							"    pm.expect(entry.publication_year).to.be.a('number');",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Body has orginal title\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('original_title');",
+							"});",
+							"pm.test(\"Body has average rating\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_avg');",
+							"});",
+							"    pm.test(\"Body has number of ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_count');",
+							"});",
+							"pm.test(\"Body has 1 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_1_star');",
+							"});",
+							"pm.test(\"Body has 2 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_2_star');",
+							"});",
+							"pm.test(\"Body has 3 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_3_star');",
+							"});",
+							"pm.test(\"Body has 4 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_4_star');",
+							"});",
+							"pm.test(\"Body has 5 star ratings\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var book = jsonData.entries[0];",
+							"    pm.expect(book).to.have.property('rating_5_star');",
+							"});",
+							"",
+							"pm.test(\"average rating is a non-negative number\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.entries).to.be.an('array');",
+							"    ",
+							"    responseData.entries.forEach(function(entry) {",
+							"        pm.expect(entry.rating_avg).to.be.a('number');",
+							"        pm.expect(entry.rating_avg).to.be.at.least(0);",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"The rating count is a non-negative number\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.entries).to.be.an('array');",
+							"    ",
+							"    responseData.entries.forEach(function(entry) {",
+							"        pm.expect(entry.rating_count).to.be.a('number');",
+							"        pm.expect(entry.rating_count).to.be.at.least(0);",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"all ratingsa are a non-negative number\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.entries).to.be.an('array');",
+							"    ",
+							"    responseData.entries.forEach(function(entry) {",
+							"        pm.expect(entry.rating_1_star).to.be.a('number');",
+							"        pm.expect(entry.rating_1_star).to.be.at.least(0);",
+							"        pm.expect(entry.rating_2_star).to.be.a('number');",
+							"        pm.expect(entry.rating_2_star).to.be.at.least(0);",
+							"        pm.expect(entry.rating_3_star).to.be.a('number');",
+							"        pm.expect(entry.rating_3_star).to.be.at.least(0);",
+							"        pm.expect(entry.rating_4_star).to.be.a('number');",
+							"        pm.expect(entry.rating_4_star).to.be.at.least(0);",
+							"        pm.expect(entry.rating_5_star).to.be.a('number');",
+							"        pm.expect(entry.rating_5_star).to.be.at.least(0);",
+							"    });",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:4000/books/all",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"all"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "name",
+			"value": ""
+		},
+		{
+			"key": "msg",
+			"value": ""
+		}
+	]
+}
