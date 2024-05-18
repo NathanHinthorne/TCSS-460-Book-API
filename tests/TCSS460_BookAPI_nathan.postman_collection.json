@@ -1,0 +1,255 @@
+{
+	"info": {
+		"_postman_id": "5d505ab1-4c90-4d82-b7d5-036f12130db8",
+		"name": "TCSS460_BookAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "34355037"
+	},
+	"item": [
+		{
+			"name": "search by author",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Fixed test script to handle TypeError",
+							"pm.test(\"Check book structure\", function () {",
+							"    var jsonData = pm.response.json() || []; // Handle response without books",
+							"    var book = jsonData[0] || {}; // Handle undefined or empty array",
+							"",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"    if (jsonData.length > 0) { // Check if array is not empty",
+							"        pm.expect(book).to.be.an('object');",
+							"        pm.expect(book).to.have.property('isbn13');",
+							"        pm.expect(book).to.have.property('authors');",
+							"        pm.expect(book).to.have.property('publication_year');",
+							"        pm.expect(book).to.have.property('original_title');",
+							"        pm.expect(book).to.have.property('title');",
+							"        pm.expect(book).to.have.property('rating_avg');",
+							"        pm.expect(book).to.have.property('rating_count');",
+							"        pm.expect(book).to.have.property('rating_1_star');",
+							"        pm.expect(book).to.have.property('rating_2_star');",
+							"        pm.expect(book).to.have.property('rating_3_star');",
+							"        pm.expect(book).to.have.property('rating_4_star');",
+							"        pm.expect(book).to.have.property('rating_5_star');",
+							"        pm.expect(book).to.have.property('image_url');",
+							"        pm.expect(book).to.have.property('image_small_url');",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"Each book has valid properties\", function () {",
+							"  pm.response.json().forEach(function(book) {",
+							"    pm.expect(book).to.be.an('object');",
+							"    pm.expect(book).to.have.property('isbn13').that.is.a('string');",
+							"    pm.expect(book).to.have.property('authors').that.is.a('string');",
+							"    pm.expect(book).to.have.property('publication_year').that.is.a('number');",
+							"    pm.expect(book).to.have.property('original_title').that.is.a('string');",
+							"    pm.expect(book).to.have.property('title').that.is.a('string');",
+							"    pm.expect(book).to.have.property('rating_avg').that.is.a('number');",
+							"    pm.expect(book).to.have.property('rating_count').that.is.a('number');",
+							"    pm.expect(book).to.have.property('rating_1_star').that.is.a('number');",
+							"    pm.expect(book).to.have.property('rating_2_star').that.is.a('number');",
+							"    pm.expect(book).to.have.property('rating_3_star').that.is.a('number');",
+							"    pm.expect(book).to.have.property('rating_4_star').that.is.a('number');",
+							"    pm.expect(book).to.have.property('rating_5_star').that.is.a('number');",
+							"    pm.expect(book).to.have.property('image_url').that.is.a('string');",
+							"    pm.expect(book).to.have.property('image_small_url').that.is.a('string');",
+							"  });",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:4000/books/author?author=C.S. Lewis",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"author"
+					],
+					"query": [
+						{
+							"key": "author",
+							"value": "C.S. Lewis"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "search by rating",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Fixed test script to handle TypeError\r",
+							"pm.test(\"Check book structure\", function () {\r",
+							"    var jsonData = pm.response.json() || []; // Handle response without books\r",
+							"    var book = jsonData[0] || {}; // Handle undefined or empty array\r",
+							"\r",
+							"    pm.expect(jsonData).to.be.an('array');\r",
+							"    if (jsonData.length > 0) { // Check if array is not empty\r",
+							"        pm.expect(book).to.be.an('object');\r",
+							"        pm.expect(book).to.have.property('isbn13');\r",
+							"        pm.expect(book).to.have.property('authors');\r",
+							"        pm.expect(book).to.have.property('publication_year');\r",
+							"        pm.expect(book).to.have.property('original_title');\r",
+							"        pm.expect(book).to.have.property('title');\r",
+							"        pm.expect(book).to.have.property('rating_avg');\r",
+							"        pm.expect(book).to.have.property('rating_count');\r",
+							"        pm.expect(book).to.have.property('rating_1_star');\r",
+							"        pm.expect(book).to.have.property('rating_2_star');\r",
+							"        pm.expect(book).to.have.property('rating_3_star');\r",
+							"        pm.expect(book).to.have.property('rating_4_star');\r",
+							"        pm.expect(book).to.have.property('rating_5_star');\r",
+							"        pm.expect(book).to.have.property('image_url');\r",
+							"        pm.expect(book).to.have.property('image_small_url');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Each book has valid properties\", function () {\r",
+							"  pm.response.json().forEach(function(book) {\r",
+							"    pm.expect(book).to.be.an('object');\r",
+							"    pm.expect(book).to.have.property('isbn13').that.is.a('string');\r",
+							"    pm.expect(book).to.have.property('authors').that.is.a('string');\r",
+							"    pm.expect(book).to.have.property('publication_year').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('original_title').that.is.a('string');\r",
+							"    pm.expect(book).to.have.property('title').that.is.a('string');\r",
+							"    pm.expect(book).to.have.property('rating_avg').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('rating_count').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('rating_1_star').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('rating_2_star').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('rating_3_star').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('rating_4_star').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('rating_5_star').that.is.a('number');\r",
+							"    pm.expect(book).to.have.property('image_url').that.is.a('string');\r",
+							"    pm.expect(book).to.have.property('image_small_url').that.is.a('string');\r",
+							"  });\r",
+							"});\r",
+							"pm.test(\"Response status code is in the 200 range\", function () {\r",
+							"    pm.expect(pm.response.to.have.status('OK'));\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:4000/books/rating?rating=4",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"books",
+						"rating"
+					],
+					"query": [
+						{
+							"key": "rating",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete by ISBNs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response is an object\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has correct properties\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('message').that.is.a('string');\r",
+							"    pm.expect(jsonData).to.have.property('isbns').that.is.an('array');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"All ISBNs in response are strings\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    jsonData.isbns.forEach(function(isbn) {\r",
+							"        pm.expect(isbn).to.be.a('string');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Error message is correct when no books found\", function () {\r",
+							"    if (pm.response.status === 404) {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData.message).to.equal('No books found with the provided ISBNs.');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Success message is correct when books are deleted\", function () {\r",
+							"    if (pm.response.status === 200) {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        var expectedMessage = `${jsonData.isbns.length} book(s) deleted successfully.`;\r",
+							"        pm.expect(jsonData.message).to.equal(expectedMessage);\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"isbns\": [\"9780375700451\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "localhost:4000/books/isbn"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "name",
+			"value": ""
+		},
+		{
+			"key": "msg",
+			"value": ""
+		}
+	]
+}
