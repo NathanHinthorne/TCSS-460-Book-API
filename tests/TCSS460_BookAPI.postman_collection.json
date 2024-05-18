@@ -103,7 +103,7 @@
             "response": []
         },
         {
-            "name": "http://localhost:4000/books/isbn?isbn=9780439023480",
+            "name": "http://localhost:4000/books/isbn?isbn=0000000000000",
             "event": [
                 {
                     "listen": "test",
@@ -162,6 +162,142 @@
                         {
                             "key": "isbn",
                             "value": "9780439023480"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Update Book - Successful Update",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"title\": \"New Title\"}"
+                },
+                "url": {
+                    "raw": "http://localhost:4000/books/isbn?isbn=9780451526342",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "4000",
+                    "path": ["books", "isbn"],
+                    "query": [
+                        {
+                            "key": "isbn",
+                            "value": "9780451526342"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Update Book - Invalid ISBN",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"title\": \"New Title\"}"
+                },
+                "url": {
+                    "raw": "http://localhost:4000/books/isbn?isbn=invalidisbn",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "4000",
+                    "path": ["books", "isbn"],
+                    "query": [
+                        {
+                            "key": "isbn",
+                            "value": "invalidisbn"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Update Book - Book Not Found",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"title\": \"New Title\"}"
+                },
+                "url": {
+                    "raw": "http://localhost:4000/books/isbn?isbn=9780451526343",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "4000",
+                    "path": ["books", "isbn"],
+                    "query": [
+                        {
+                            "key": "isbn",
+                            "value": "9780451526343"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Update Book - No Fields Provided for Update",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{}"
+                },
+                "url": {
+                    "raw": "http://localhost:4000/books/isbn?isbn=9780451526342",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "4000",
+                    "path": ["books", "isbn"],
+                    "query": [
+                        {
+                            "key": "isbn",
+                            "value": "9780451526342"
                         }
                     ]
                 }
