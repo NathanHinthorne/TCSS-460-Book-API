@@ -336,14 +336,14 @@ bookRouter.get('/all', (request: Request, response: Response) => {
 
 /**
  * NOTE: This is a required endpoint
- * @api {get} /books/isbn/:isbn Get book by ISBN
+ * @api {get} /books/isbn/?isbn=:isbn Get book by ISBN
  *
  * @apiDescription Get a specific book by ISBN
  *
  * @apiName GetByISBN
  * @apiGroup User
  *
- * @apiParam {Number} isbn The ISBN paired with a given book
+ * @apiQuery {Number} isbn The ISBN of the book
  *
  * @apiSuccess {Object} book The book with the given ISBN
  * @apiUse BookSuccess
