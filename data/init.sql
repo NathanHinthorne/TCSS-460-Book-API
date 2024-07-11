@@ -1,12 +1,3 @@
--- Active: 1710457548247@@127.0.0.1@5432@tcss460@public
-
-CREATE TABLE Demo (
-    DemoID SERIAL PRIMARY KEY,
-    Priority INT,
-    Name TEXT NOT NULL UNIQUE,
-    Message TEXT
-);
-
 CREATE TABLE Account (
     Account_ID SERIAL PRIMARY KEY,
     FirstName VARCHAR(255) NOT NULL,
@@ -25,25 +16,22 @@ CREATE TABLE Account_Credential (
     FOREIGN KEY (Account_ID) REFERENCES Account (Account_ID)
 );
 
-CREATE TABLE BOOKS (
-    id INT PRIMARY KEY,
-    isbn13 BIGINT NOT NULL,
-    authors TEXT,
-    publication_year INT,
-    original_title TEXT,
-    title TEXT,
-    rating_avg FLOAT,
-    rating_count INT,
-    rating_1_star INT,
-    rating_2_star INT,
-    rating_3_star INT,
-    rating_4_star INT,
-    rating_5_star INT,
-    image_url TEXT,
-    image_small_url TEXT
+CREATE TABLE Birds (
+    Formatted_Com_Name TEXT PRIMARY KEY,
+    Com_Name TEXT NOT NULL,
+    Sci_Name TEXT,
+    Preview_Photo TEXT,
+    Male_Breeding_Photo TEXT,
+    Male_Nonbreeding_Photo TEXT,
+    Female_Photo TEXT,
+    Sound TEXT,
+    Short_Desc TEXT,
+    Long_Desc TEXT,
+    How_To_Find TEXT,
+    Learn_More_Link TEXT
 );
 
-COPY books FROM '/docker-entrypoint-initdb.d/books.csv'
+COPY birds FROM '/docker-entrypoint-initdb.d/birds.csv'
 
 DELIMITER ','
 

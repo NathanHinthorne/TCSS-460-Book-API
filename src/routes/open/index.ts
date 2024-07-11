@@ -1,11 +1,11 @@
 import express, { Router } from 'express';
 
-import { messageRouter } from './message';
-import { bookRouter } from './books';
+import { birdRouter } from './birds';
+// Import additional routers here
 
 const openRoutes: Router = express.Router();
 
-openRoutes.use('/message', messageRouter);
-openRoutes.use('/books', bookRouter);
+openRoutes.use('/birds', birdRouter);
+// Use additional routers here
 
 export { openRoutes };

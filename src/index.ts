@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(routes);
 
 app.get('/', (request: Request, response: Response) => {
-    response.send('<h1>Hello World!</h1>');
+    response.send("<h1>Nathan's Bird API</h1>");
 });
 
 app.listen(PORT, () => {
